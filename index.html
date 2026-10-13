@@ -140,6 +140,17 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .chat-in input{flex:1;min-width:0;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font:inherit}
 .chat-in .btn{width:auto;padding:12px 16px}
 #game.screen{padding-bottom:90px}
+.sheet.dock{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;border-radius:18px 18px 0 0;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));z-index:25;box-shadow:0 -6px 24px rgba(0,0,0,.45);background:var(--bg-2);max-height:60vh;overflow-y:auto;border-bottom:0}
+.sheet.dock h3{font-size:18px;margin:0 0 4px}
+.sheet.dock p{font-size:14px;line-height:1.35;margin:0 0 8px}
+.sheet.dock .btn{padding:10px 12px;font-size:16px}
+.sheet.dock .dirs{margin:4px 0 8px;gap:6px}
+.sheet.dock .dirs button{font-size:22px;padding:3px 0}
+body.docked .status{display:none}
+body.docked #game.screen{padding-bottom:240px}
+body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-width:min(520px,max(250px,calc(100dvh - 380px)))}
+#chatPanel{background:transparent;border:0;padding:0;margin:16px 0 0}
+#chatPanel .chat-list{max-height:none;overflow:visible;padding-top:10px}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -165,7 +176,7 @@ label.f{display:block;margin-top:14px;font-weight:700}
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">🔔 Ton &amp; Benachrichtigungen</button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 9</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 10</p>
   </div>
 </section>
 
@@ -795,16 +806,11 @@ const CFGS = { cfg, lcfg, bcfg };
 const app = { kind: null, st: null, me: null, id: null, sel: null, taneMode: false, taneDir: null, phaseKey: '',
   code: null, ref: null, unsub: null, doc: null, pendingRev: null, screen: 'home' };
 
-// ---------- capabilities ----------
-let dbP = null, userP = null;
-const cap = name => (window.claude && typeof window.claude.use === 'function') ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
-const getDb = () => (dbP = dbP || cap('db'));
-const getUser = () => (userP = userP || cap('user'));
+// ---------- Geräte-Kennung ----------
 async function myId() {
   if (app.id) return app.id;
-  let id = null;
-  try { const u = await getUser(); id = u ? await u.id() : null; } catch (e) { id = null; }
-  if (!id) { id = lsGet('mk-id'); if (!id) { id = 'l' + Math.random().toString(36).slice(2, 10); lsSet('mk-id', id); } }
+  let id = lsGet('mk-id');
+  if (!id) { id = 'l' + Math.random().toString(36).slice(2, 10); lsSet('mk-id', id); }
   return (app.id = id);
 }
 
@@ -812,6 +818,7 @@ async function myId() {
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
   app.screen = id; window.scrollTo(0, 0);
+  if (id !== 'game') document.body.classList.remove('docked');
   if (typeof renderChat === 'function') setTimeout(renderChat, 0);
   if (id === 'home') refreshHome();
 }
@@ -1149,13 +1156,13 @@ function render() {
     const it = g.queue[0];
     if (act) {
       s = (app.kind === 'local' ? nameOf(who) + ' gewinnt ' : 'Du gewinnst ') + areaWord(it) + '.';
-      html = `<div class="sheet"><h3>Plättchen oder Maori-Tane?</h3>`;
+      html = `<div class="sheet dock"><h3>${s}</h3>`;
       if (!app.taneMode) {
-        html += `<p>Leg dein Stammesplättchen – oder stell einmalig deinen Maori-Tane hierhin. In seiner Blickrichtung räumt er alle Plättchen bis zum Rand ab, auch deine eigenen.</p>
+        html += `<p>Plättchen legen – oder einmalig den Maori-Tane einsetzen. Er räumt in Blickrichtung alle Plättchen bis zum Rand, auch deine.</p>
         <div class="row"><button class="btn" id="tTile">Plättchen legen</button><button class="btn" id="tTane">Maori-Tane einsetzen</button></div>`;
       } else {
         const arrows = ['↖', '↗', '↘', '↙'];
-        html += `<p>Wohin blickt dein Tane? Gelb markierte Felder werden geräumt und bleiben gesperrt. Ein gelber Ring zeigt, wo sich die Blicke beider Tane kreuzen – dort darf wieder ein Plättchen liegen.</p><div class="dirs">` +
+        html += `<p>Blickrichtung wählen. Gelb = wird geräumt, Ring = Kreuzung der Blicke.</p><div class="dirs">` +
           arrows.map((ar, i) => {
             // the arrow is what the player sees on screen; on a board turned by 180° it means the opposite board direction
             const d = boardTurned() ? (i + 2) % 4 : i;
@@ -1174,7 +1181,7 @@ function render() {
       marae: `nach Punkten, ${fmt(r.score.B)} zu ${fmt(r.score.W)} (Schwarz zu Weiß).`, 'marae-gleich': `bei Punktgleichstand (${fmt(r.score.B)} zu ${fmt(r.score.W)}) – wer die Kugel gelegt hat, gewinnt.` }[r.reason];
     const title = !w ? 'Unentschieden' : app.kind !== 'local' ? (w === app.me ? 'Du gewinnst diese Partie' : OPP() + ' gewinnt diese Partie') : nameOf(w) + ' gewinnt diese Partie';
     s = title + '!';
-    html = `<div class="sheet"><h3>${title}</h3><p>${reason}</p>`;
+    html = `<div class="sheet dock"><h3>${title}</h3><p>${reason}</p>`;
     if (st.matchWinner) {
       const mt = app.kind !== 'local' ? (st.matchWinner === app.me ? 'Damit hast du das Moeraki-Kemu gewonnen!' : 'Damit hat ' + opp() + ' das Moeraki-Kemu gewonnen.') : nameOf(st.matchWinner) + ' gewinnt das Moeraki-Kemu!';
       html += `<p><b>${mt}</b> Endstand ${st.wins.B} zu ${st.wins.W}.</p><button class="btn primary" id="newMatch">Neues Match starten</button>`;
@@ -1185,6 +1192,7 @@ function render() {
   }
   $('#status').textContent = s;
   $('#actions').innerHTML = html;
+  document.body.classList.toggle('docked', html.indexOf('sheet dock') >= 0);
   if (typeof renderChat === 'function') renderChat();
 }
 
