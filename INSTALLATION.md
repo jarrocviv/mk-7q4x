@@ -1,5 +1,6 @@
 # Moeraki-Kemu – eigenständige App
 
+Diese App läuft ohne Claude. Sie besteht nur aus den Dateien in diesem Ordner.
 
 ## Was ohne Internet geht
 - Zu zweit auf einem Handy
