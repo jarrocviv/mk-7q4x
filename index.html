@@ -157,6 +157,8 @@ label.f{display:block;margin-top:14px;font-weight:700}
     <button class="btn" data-go="localSetup">Zu zweit auf diesem Handy<small>Ihr reicht das Handy hin und her</small></button>
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
+    <button class="btn" id="homeBell">🔔 Ton &amp; Benachrichtigungen</button>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 7</p>
   </div>
 </section>
 
@@ -1538,6 +1540,7 @@ $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); })
 // ---------- init ----------
 $('#game').appendChild($('#chatPanel'));
 $('#bellBtn').addEventListener('click', () => { renderSettings(); $('#setPanel').hidden = false; });
+$('#homeBell').addEventListener('click', () => { renderSettings(); $('#setPanel').hidden = false; });
 $('#setClose').addEventListener('click', () => { $('#setPanel').hidden = true; });
 $('#pSound').addEventListener('click', () => { prefs.sound = !prefs.sound; savePrefs(); renderSettings(); if (prefs.sound) Sound.test(); });
 $('#pTest').addEventListener('click', () => Sound.test());

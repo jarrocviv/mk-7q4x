@@ -1,5 +1,5 @@
 // Offline-Cache für Moeraki-Kemu
-const CACHE = 'moeraki-kemu-v6';
+const CACHE = 'moeraki-kemu-v7';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -12,7 +12,7 @@ self.addEventListener('fetch', e => {
   const cacheable = url.origin === location.origin || url.hostname === 'cdn.jsdelivr.net' || url.hostname.endsWith('fonts.googleapis.com') || url.hostname.endsWith('fonts.gstatic.com');
   if (!cacheable) return;
   // Netz zuerst (damit Updates ankommen), sonst Cache
-  e.respondWith(fetch(req).then(res => {
+  e.respondWith((url.origin === location.origin ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }) : fetch(req)).then(res => {
     if (res && (res.ok || res.type === 'opaque')) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
     return res;
   }).catch(() => caches.match(req).then(r => r || caches.match('./index.html'))));
