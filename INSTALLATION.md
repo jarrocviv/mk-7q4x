@@ -1,6 +1,5 @@
 # Moeraki-Kemu – eigenständige App
 
-Diese App läuft ohne Claude. Sie besteht nur aus den Dateien in diesem Ordner.
 
 ## Was ohne Internet geht
 - Zu zweit auf einem Handy
@@ -47,3 +46,10 @@ Am PC: Adresse in Chrome oder Edge öffnen und über das Install-Symbol in der A
 ## Hinweis
 Moeraki-Kemu ist ein Spiel von Stefan Kiehl (Kiehly). Die eingebaute Spielanleitung stammt aus dem Original.
 Die App ist für den privaten Gebrauch gedacht – vor einer Weitergabe bitte den Autor fragen (info@kiehly.de).
+
+## 5. Ton und Benachrichtigungen (🔔 oben im Spiel)
+- **Moeraki-Ruf:** eigener Klang, sobald der Freund gezogen hat (App geöffnet).
+- **Benachrichtigung im Hintergrund:** solange die App offen, aber nicht im Vordergrund ist.
+- **Push, auch wenn die App geschlossen ist:** über die kostenlose App „ntfy“ (Play Store).
+  Im 🔔-Menü einschalten, das angezeigte Thema in ntfy abonnieren, dort einen Ton wählen.
+  Jeder Spieler macht das auf seinem eigenen Handy.

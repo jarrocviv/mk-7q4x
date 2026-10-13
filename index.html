@@ -97,6 +97,22 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .pages.z1 img{width:100%}.pages.z2 img{width:200%}.pages.z3 img{width:320%}
 .rules ul{padding-left:20px;margin:6px 0 10px}
 .rules li{margin-bottom:6px}
+.set-list{overflow-y:auto;padding:4px 2px}
+.set-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.set-row small{display:block;color:var(--ink-soft);font-size:14px}
+.set-row small.warn{color:var(--danger)}
+.tgl{flex:0 0 auto;min-width:64px;padding:8px 12px;border-radius:18px;border:1.5px solid var(--line);background:transparent;font-weight:700}
+.tgl[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.ntfy-box{background:var(--panel);border-radius:12px;padding:12px;margin:10px 0}
+.ntfy-topic{display:flex;gap:8px;align-items:center;margin:6px 0 10px}
+.ntfy-topic code{flex:1;min-width:0;overflow-wrap:anywhere;background:rgba(0,0,0,.25);padding:8px 10px;border-radius:8px;font-size:15px}
+.ntfy-topic .btn{width:auto;padding:8px 12px}
+#setPanel{z-index:40}
+#chatPanel{position:static;height:auto;max-width:none;margin:12px 0 0;border-radius:16px;box-shadow:none;background:var(--panel);border:1.5px solid var(--line);padding:10px 10px 12px;z-index:auto}
+#chatPanel .chat-head{font-size:17px;padding:0 2px 4px}
+#chatPanel .chat-list{max-height:210px;min-height:56px;flex:none}
+#chatPanel .chat-empty{margin:10px 0}
+#game.screen{padding-bottom:24px}
 .chat-fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:linear-gradient(180deg,#E6D2AE,#C9AC80);font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:20}
 .chat-fab .badge{position:absolute;top:-2px;right:-2px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#E0533D;color:#fff;font:700 13px/22px var(--sans)}
 .chat-panel{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;height:min(72vh,560px);background:var(--bg-2);border-radius:18px 18px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.45);display:flex;flex-direction:column;z-index:30;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
@@ -259,7 +275,7 @@ label.f{display:block;margin-top:14px;font-weight:700}
 </section>
 
 <section id="game" class="screen">
-  <div class="top"><button class="link" id="leaveBtn">← Menü</button><button class="link" id="gameManual">Anleitung</button><span class="soft" id="gameInfo" style="font-size:14px"></span></div>
+  <div class="top"><button class="link" id="leaveBtn">← Menü</button><button class="link" id="gameManual">Anleitung</button><button class="link" id="bellBtn" aria-label="Ton und Benachrichtigungen">🔔</button><span class="soft" id="gameInfo" style="font-size:14px"></span></div>
   <div class="players"><div class="pl" id="plB"></div><div class="pl" id="plW"></div></div>
   <div id="boardWrap" class="layers"><svg id="boardBg" viewBox="-82 -82 164 164" aria-hidden="true"></svg><svg id="board" viewBox="-82 -82 164 164" role="img" aria-label="Spielbrett"></svg></div>
   <div class="status" id="status" aria-live="polite"></div>
@@ -324,10 +340,26 @@ label.f{display:block;margin-top:14px;font-weight:700}
 
 <button id="chatBtn" class="chat-fab" hidden aria-label="Chat öffnen">💬<span id="chatBadge" class="badge" hidden></span></button>
 <div id="chatPanel" class="chat-panel" hidden role="dialog" aria-label="Chat">
-  <div class="chat-head"><b>Chat mit deinem Freund</b><button class="link" id="chatClose" aria-label="Chat schließen">✕</button></div>
+  <div class="chat-head"><b>Chat</b><button class="link" id="chatClose" hidden aria-label="Chat schließen">✕</button></div>
   <div id="chatList" class="chat-list" aria-live="polite"></div>
   <div class="chat-quick" id="chatQuick"></div>
   <div class="chat-in"><input id="chatIn" maxlength="300" placeholder="Nachricht schreiben …" autocomplete="off" enterkeyhint="send"><button id="chatSend" class="btn primary">Senden</button></div>
+</div>
+<div id="setPanel" class="chat-panel" hidden role="dialog" aria-label="Ton und Benachrichtigungen">
+  <div class="chat-head"><b>Ton &amp; Benachrichtigungen</b><button class="link" id="setClose" aria-label="Schließen">✕</button></div>
+  <div class="set-list">
+    <div class="set-row"><div><b>Moeraki-Ruf</b><small>Erklingt, sobald dein Freund gezogen hat. Lautstärke = Medienlautstärke des Handys.</small></div><button class="tgl" id="pSound"></button></div>
+    <button class="btn ghost" id="pTest" style="margin:8px 0">Ton anhören</button>
+    <div class="set-row"><div><b>Vibration</b><small>Kurzes Vibrieren, wenn du dran bist.</small></div><button class="tgl" id="pVib"></button></div>
+    <div class="set-row"><div><b>Benachrichtigung im Hintergrund</b><small>Solange die App offen ist, aber nicht im Vordergrund.</small><small id="pSysNote" class="warn"></small></div><button class="tgl" id="pSys"></button></div>
+    <div class="set-row"><div><b>Push, auch wenn die App geschlossen ist</b><small>Über die kostenlose App „ntfy“ – zuverlässig und mit eigenem Ton.</small></div><button class="tgl" id="pNtfy"></button></div>
+    <div id="ntfyBox" class="ntfy-box" hidden>
+      <p>1. Installiere <b>ntfy</b> aus dem Play Store.<br>2. Tippe dort auf <b>+</b> und abonniere dieses Thema:</p>
+      <div class="ntfy-topic"><code id="ntfyTopic"></code><button class="btn ghost" id="ntfyCopy">Kopieren</button></div>
+      <p class="soft">3. In ntfy beim Thema einen Benachrichtigungston deiner Wahl einstellen.<br>Dann meldet sich dein Handy bei jedem Zug und jeder Chat-Nachricht deines Freundes – auch wenn Moeraki-Kemu geschlossen ist. Dein Freund braucht dafür die neue App-Version.</p>
+      <button class="btn ghost" id="ntfyTest">Test-Benachrichtigung schicken</button>
+    </div>
+  </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -1196,7 +1228,7 @@ function botTurn() {
       else if (g.phase === 'play') ns = MK.placeStone(st, AI.bestMove(st, bot, 2200), bot);
     } catch (e) { console.error(e); }
     app.thinking = false;
-    if (ns) commit(ns); else render();
+    if (ns) { commit(ns); if (prefs.sound && ns.g.phase !== 'tane') Sound.turn(); } else render();
   }, 450);
 }
 // ---------- Online über einen MQTT-Relaisdienst (zwei öffentliche Broker parallel) ----------
@@ -1204,7 +1236,7 @@ const BROKERS = ['wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884
 const NS = 'kiehly-moeraki-kemu-app-v2/';
 const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const genCode = () => Array.from({ length: 5 }, () => ALPH[Math.floor(Math.random() * ALPH.length)]).join('');
-const net = { clients: [], code: null, doc: null, joinTimer: null, mode: null, chat: { B: [], W: [] } };
+const net = { clients: [], code: null, doc: null, joinTimer: null, mode: null, chat: { B: [], W: [] }, notify: { B: null, W: null } };
 const isConn = () => net.clients.some(c => c.connected);
 Object.defineProperty(net, 'connected', { get: isConn });
 function saveOnline() { if (net.doc) lsSet('mk-on', JSON.stringify(net.doc)); lsSet('mk-last', net.code || ''); }
@@ -1217,7 +1249,7 @@ function publish() {
 function closeOnline() {
   clearTimeout(net.joinTimer);
   net.clients.forEach(c => { try { c.end(true); } catch (e) {} });
-  net.clients = []; net.doc = null; net.mode = null; net.chat = { B: [], W: [] }; closeChat();
+  net.clients = []; net.doc = null; net.mode = null; net.chat = { B: [], W: [] }; net.notify = { B: null, W: null }; closeChat();
 }
 function connectAll(code) {
   try { net.chat = JSON.parse(lsGet('mk-chat-' + code) || 'null') || { B: [], W: [] }; } catch (e) { net.chat = { B: [], W: [] }; }
@@ -1228,7 +1260,8 @@ function connectAll(code) {
     try { c = mqtt.connect(url, { clientId: 'mk_' + Math.random().toString(16).slice(2, 12), clean: true, connectTimeout: 8000, reconnectPeriod: 4000, keepalive: 30 }); }
     catch (e) { return; }
     c.on('connect', () => {
-      c.subscribe([NS + code, NS + code + '/chat/+'], { qos: 1 });
+      c.subscribe([NS + code, NS + code + '/chat/+', NS + code + '/notify/+'], { qos: 1 });
+      if (app.me && prefs.ntfy) { try { c.publish(NS + code + '/notify/' + app.me, JSON.stringify({ topic: ntfyTopic() }), { qos: 1, retain: true }); } catch (e) {} }
       const mine = net.chat[app.me];
       if (app.me && mine && mine.length) { try { c.publish(NS + code + '/chat/' + app.me, JSON.stringify(mine), { qos: 1, retain: true }); } catch (e) {} }
       if (net.doc && net.mode !== 'join-wait') { try { c.publish(NS + code, JSON.stringify(net.doc), { qos: 1, retain: true }); } catch (e) {} }
@@ -1239,7 +1272,9 @@ function connectAll(code) {
     c.on('message', (t, payload) => {
       let d = null; try { d = JSON.parse(payload.toString()); } catch (e) {}
       if (!d) return;
-      if (t.startsWith(NS + code + '/chat/')) onChat(t.slice(-1), d); else onDoc(d);
+      if (t.startsWith(NS + code + '/chat/')) onChat(t.slice(-1), d);
+      else if (t.startsWith(NS + code + '/notify/')) { const col = t.slice(-1); if (col === 'B' || col === 'W') net.notify[col] = d && typeof d.topic === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(d.topic) ? d.topic : null; }
+      else onDoc(d);
     });
     net.clients.push(c);
   });
@@ -1270,6 +1305,7 @@ function onDoc(d) {
     }
   }
   if (net.doc !== d) net.doc = d;
+  const before = app.st, beforeRev = app.rev || 0;
   app.st = net.doc.state; app.rev = net.doc.rev;
   app.me = net.doc.players.B === app.id ? 'B' : net.doc.players.W === app.id ? 'W' : null;
   saveOnline();
@@ -1277,6 +1313,97 @@ function onDoc(d) {
   if (!(net.doc.players.B && net.doc.players.W)) { $('#waitCode').textContent = net.code; if (app.screen !== 'wait') show('wait'); return; }
   if (app.screen !== 'game') show('game');
   render();
+  // the friend has moved: it is my turn now (or the game just ended)
+  if (before && (app.rev || 0) > beforeRev) {
+    const g = app.st.g, was = before.g;
+    const myTurnNow = g.turn === app.me && was.turn !== app.me;
+    const ended = g.phase === 'over' && was.phase !== 'over';
+    if (myTurnNow || ended) alertTurn(ended ? (g.result && g.result.winner === app.me ? 'Partie vorbei – du hast gewonnen!' : g.result && g.result.winner ? 'Partie vorbei – dein Freund hat gewonnen.' : 'Partie vorbei – unentschieden.') : 'Dein Freund hat gezogen – du bist dran.');
+  }
+}
+// ----- Ton & Benachrichtigungen -----
+const prefs = Object.assign({ sound: true, vibrate: true, sys: false, ntfy: false }, (() => { try { return JSON.parse(lsGet('mk-prefs') || '{}'); } catch (e) { return {}; } })());
+const savePrefs = () => lsSet('mk-prefs', JSON.stringify(prefs));
+function ntfyTopic() {
+  let t = lsGet('mk-ntfy');
+  if (!t) { t = 'moeraki-' + Array.from(crypto.getRandomValues(new Uint8Array(9))).map(b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join(''); lsSet('mk-ntfy', t); }
+  return t;
+}
+const Sound = (() => {
+  // Die Klänge werden einmal als kleine WAV-Dateien berechnet und über ein <audio>-Element abgespielt.
+  // Das klappt auf Android zuverlässiger als reines Web-Audio. Lautstärke = Medienlautstärke des Handys.
+  const SR = 22050;
+  function render(kind) {
+    const dur = kind === 'turn' ? 1.7 : 0.6, n = Math.floor(SR * dur), d = new Float32Array(n);
+    const tone = (f, t0, len, vol, tri) => {
+      const s0 = Math.floor(t0 * SR), L = Math.floor(len * SR);
+      for (let i = 0; i < L && s0 + i < n; i++) {
+        const t = i / SR, env = Math.min(1, t / 0.006) * Math.exp(-5 * t / len), ph = (f * t) % 1;
+        const w = tri ? 4 * Math.abs(ph - 0.5) - 1 : Math.sin(2 * Math.PI * f * t);
+        d[s0 + i] += vol * env * w;
+      }
+    };
+    if (kind === 'turn') {
+      let prev = 0; // stone clack: filtered noise burst + low wooden thump
+      for (let i = 0; i < SR * 0.05; i++) { const t = i / SR, x = (Math.random() * 2 - 1) * Math.exp(-t / 0.009); d[i] += 0.55 * (x - prev); prev = x; }
+      tone(165, 0, 0.12, 0.5, true);
+      [[523.25, .14], [783.99, .30], [1046.5, .46]].forEach(([f, dt]) => { tone(f, dt, 0.75, 0.32); tone(f * 3.98, dt, 0.18, 0.05); });
+      tone(783.99, .95, 0.6, 0.09);
+    } else { tone(880, 0, 0.25, 0.3); tone(1318.5, 0.09, 0.35, 0.25); }
+    let pk = 0; for (const v of d) pk = Math.max(pk, Math.abs(v));
+    const g = pk ? 0.92 / pk : 1;
+    const buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    ws(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); ws(8, 'WAVE'); ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, SR, true); v.setUint32(28, SR * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); ws(36, 'data'); v.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, d[i] * g)) * 32767, true);
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  }
+  const urls = { turn: render('turn'), chat: render('chat') };
+  const els = {}; Object.keys(urls).forEach(k => { const a = new Audio(urls[k]); a.preload = 'auto'; els[k] = a; });
+  let unlocked = false;
+  function unlock() { // Android erlaubt Ton erst nach einer Berührung: dabei jeden Klang einmal stumm anspielen
+    if (unlocked) return;
+    Object.values(els).forEach(a => { a.muted = true; const p = a.play(); if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; unlocked = true; }).catch(() => { a.muted = false; }); });
+  }
+  ['pointerdown', 'touchend', 'keydown'].forEach(ev => document.addEventListener(ev, unlock, { passive: true }));
+  function play(k) {
+    const a = els[k]; if (!a) return;
+    try { a.muted = false; a.volume = 1; a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+  }
+  return { turn: () => play('turn'), chat: () => play('chat'), test: () => { unlock(); play('turn'); }, get ready() { return unlocked; } };
+})();
+async function sysNotify(body, tag) {
+  if (!prefs.sys || !('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    const opt = { body, tag: tag || 'mk-turn', renotify: true, icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [80, 50, 80, 50, 160], data: { url: location.href } };
+    if (reg) reg.showNotification('Moeraki-Kemu', opt); else new Notification('Moeraki-Kemu', opt);
+  } catch (e) {}
+}
+function alertTurn(msg) {
+  if (prefs.sound) Sound.turn();
+  if (prefs.vibrate && navigator.vibrate) navigator.vibrate([70, 60, 70, 60, 180]);
+  if (document.hidden) sysNotify(msg, 'mk-turn'); else toast(msg);
+}
+function pingFriend(msg) { // push to the friend's phone through ntfy (works even when his app is closed)
+  const opp_ = app.me && MK.other(app.me), topic = opp_ && net.notify[opp_];
+  if (!topic) return;
+  const url = 'https://ntfy.sh/' + topic + '/publish?' + new URLSearchParams({ title: 'Moeraki-Kemu (' + net.code + ')', message: msg, tags: 'game_die', click: location.origin + location.pathname });
+  try { fetch(url, { mode: 'no-cors' }).catch(() => {}); } catch (e) {}
+}
+function announceNotify() { // tell the friend's app where to reach me (or that I opted out)
+  if (app.kind !== 'online' || !app.me) return;
+  const s = JSON.stringify({ topic: prefs.ntfy ? ntfyTopic() : null });
+  net.clients.forEach(c => { if (c.connected) { try { c.publish(NS + net.code + '/notify/' + app.me, s, { qos: 1, retain: true }); } catch (e) {} } });
+}
+function renderSettings() {
+  const tg = (id, on) => { const b = $(id); b.setAttribute('aria-pressed', String(!!on)); b.textContent = on ? 'An' : 'Aus'; };
+  tg('#pSound', prefs.sound); tg('#pVib', prefs.vibrate); tg('#pSys', prefs.sys); tg('#pNtfy', prefs.ntfy);
+  const perm = 'Notification' in window ? Notification.permission : 'unsupported';
+  $('#pSysNote').textContent = perm === 'denied' ? 'Benachrichtigungen sind für diese App blockiert. Erlaube sie in den Android-Einstellungen der App.' : perm === 'unsupported' ? 'Dieses Gerät unterstützt keine Benachrichtigungen im Browser.' : '';
+  $('#ntfyBox').hidden = !prefs.ntfy;
+  $('#ntfyTopic').textContent = ntfyTopic();
 }
 // ----- Chat -----
 const QUICK = ['Guter Zug! 👍', 'Oh nein 😅', 'Du bist dran', 'Glückwunsch! 🎉', 'Revanche?', 'Bis später 👋'];
@@ -1288,7 +1415,11 @@ function onChat(color, arr) {
   arr.forEach(m => { if (m && typeof m.t === 'number' && typeof m.m === 'string' && !seen.has(m.t)) { cur.push({ t: m.t, m: m.m.slice(0, 300) }); fresh.push(m); } });
   net.chat[color] = cur.sort((a, b) => a.t - b.t).slice(-40);
   lsSet('mk-chat-' + net.code, JSON.stringify(net.chat));
-  if (color !== app.me && fresh.length && !$('#chatPanel').classList.contains('on') && Date.now() - fresh[fresh.length - 1].t < 120000) toast('💬 ' + fresh[fresh.length - 1].m.slice(0, 80));
+  if (color !== app.me && fresh.length && Date.now() - fresh[fresh.length - 1].t < 120000) {
+    if (!$('#chatPanel').classList.contains('on')) toast('💬 ' + fresh[fresh.length - 1].m.slice(0, 80));
+    if (prefs.sound) Sound.chat();
+    if (document.hidden) sysNotify('💬 ' + fresh[fresh.length - 1].m.slice(0, 120), 'mk-chat');
+  }
   renderChat();
 }
 function sendChat(text) {
@@ -1298,14 +1429,15 @@ function sendChat(text) {
   let ok = false;
   net.clients.forEach(c => { if (c.connected) { try { c.publish(NS + net.code + '/chat/' + app.me, JSON.stringify(mine), { qos: 1, retain: true }); ok = true; } catch (e) {} } });
   if (!ok) toast('Gerade offline. Die Nachricht wird gesendet, sobald du wieder online bist.');
+  pingFriend('💬 ' + text.slice(0, 120));
   renderChat();
 }
 function renderChat() {
-  const btn = $('#chatBtn'); if (!btn) return;
-  const show_ = app.kind === 'online' && !!app.me && (app.screen === 'game' || app.screen === 'wait');
-  btn.hidden = !show_;
-  const n = unread(), badge = $('#chatBadge'); badge.hidden = !n || $('#chatPanel').classList.contains('on'); badge.textContent = n > 9 ? '9+' : n;
-  if (!$('#chatPanel').classList.contains('on')) return;
+  const btn = $('#chatBtn'), panel = $('#chatPanel'); if (!btn || !panel) return;
+  btn.hidden = true;
+  const vis = app.kind === 'online' && !!app.me && app.screen === 'game';
+  panel.hidden = !vis; panel.classList.toggle('on', vis);
+  if (!vis) return;
   const all = [];
   ['B', 'W'].forEach(c => (net.chat[c] || []).forEach(m => all.push({ c, t: m.t, m: m.m })));
   all.sort((a, b) => a.t - b.t);
@@ -1328,6 +1460,8 @@ async function commitOnline(ns) {
   net.doc = Object.assign({}, net.doc, { state: ns, rev: (net.doc.rev || 0) + 1 });
   app.st = ns; app.rev = net.doc.rev; saveOnline(); render();
   if (!publish()) toast('Gerade keine Verbindung. Der Zug wird übertragen, sobald das Handy wieder online ist.');
+  const g = ns.g, opp_ = MK.other(app.me);
+  if (g.turn === opp_ || g.phase === 'over') pingFriend(g.phase === 'over' ? 'Die Partie ist vorbei – schau dir das Ergebnis an.' : 'Dein Freund hat gezogen – du bist dran.');
 }
 function needMqtt(el) {
   if (typeof mqtt === 'undefined') { $(el).textContent = 'Für das Online-Spiel braucht dein Handy eine Internetverbindung. Prüfe sie und öffne die App neu.'; return false; }
@@ -1402,6 +1536,20 @@ $('#leaveBtn').addEventListener('click', () => { closeOnline(); app.botToken = (
 $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); });
 
 // ---------- init ----------
+$('#game').appendChild($('#chatPanel'));
+$('#bellBtn').addEventListener('click', () => { renderSettings(); $('#setPanel').hidden = false; });
+$('#setClose').addEventListener('click', () => { $('#setPanel').hidden = true; });
+$('#pSound').addEventListener('click', () => { prefs.sound = !prefs.sound; savePrefs(); renderSettings(); if (prefs.sound) Sound.test(); });
+$('#pTest').addEventListener('click', () => Sound.test());
+$('#pVib').addEventListener('click', () => { prefs.vibrate = !prefs.vibrate; savePrefs(); renderSettings(); if (prefs.vibrate && navigator.vibrate) navigator.vibrate(120); });
+$('#pSys').addEventListener('click', async () => {
+  if (!prefs.sys && 'Notification' in window && Notification.permission !== 'granted') { try { await Notification.requestPermission(); } catch (e) {} }
+  prefs.sys = !prefs.sys && 'Notification' in window && Notification.permission === 'granted'; savePrefs(); renderSettings();
+});
+$('#pNtfy').addEventListener('click', () => { prefs.ntfy = !prefs.ntfy; savePrefs(); renderSettings(); announceNotify(); });
+$('#ntfyCopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(ntfyTopic()); toast('Thema kopiert.'); } catch (e) { toast('Bitte das Thema von Hand abschreiben.'); } });
+$('#ntfyTest').addEventListener('click', () => { try { fetch('https://ntfy.sh/' + ntfyTopic() + '/publish?' + new URLSearchParams({ title: 'Moeraki-Kemu', message: 'Test: So meldet sich die App, wenn dein Freund gezogen hat.', tags: 'game_die' }), { mode: 'no-cors' }); toast('Test gesendet – kommt gleich in ntfy an.'); } catch (e) {} });
+
 $('#chatQuick').innerHTML = QUICK.map(q => `<button type="button">${q}</button>`).join('');
 $('#chatQuick').addEventListener('click', e => { const b = e.target.closest('button'); if (b) sendChat(b.textContent); });
 $('#chatBtn').addEventListener('click', openChat);
