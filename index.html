@@ -10,7 +10,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js';document.head.appendChild(s)"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
@@ -125,8 +125,8 @@ label.f{display:block;margin-top:14px;font-weight:700}
 <section id="online" class="screen">
   <div class="top"><button class="link" data-go="home">← Zurück</button></div>
   <h2>Partie beitreten</h2>
-  <p class="soft">Dein Freund hat schon eine Partie erstellt? Gib seinen Code ein. Ihr spielt direkt von Handy zu Handy – dazu müsst ihr beide die App gleichzeitig geöffnet haben.</p>
-  <input id="codeIn" class="code-in" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Partie-Code">
+  <p class="soft">Dein Freund hat schon eine Partie erstellt? Gib seinen Code ein.</p>
+  <input id="codeIn" class="code-in" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Partie-Code">
   <button class="btn primary" id="joinBtn" style="margin-top:10px">Beitreten</button>
   <div class="err" id="joinErr" role="alert"></div>
 
@@ -231,7 +231,7 @@ label.f{display:block;margin-top:14px;font-weight:700}
 <section id="wait" class="screen">
   <div class="top"><button class="link" id="waitBack">← Menü</button></div>
   <h2>Partie erstellt</h2>
-  <p>Schick deinem Freund diesen Code. Er öffnet die App, tippt auf „Online gegen einen Freund“ und gibt den Code ein. Lass die App so lange geöffnet.</p>
+  <p>Schick deinem Freund diesen Code. Er öffnet dieselbe App, tippt auf „Online gegen einen Freund“ und gibt den Code ein.</p>
   <div class="code-big" id="waitCode"></div>
   <p class="soft" style="text-align:center">Warte auf deinen Freund …</p>
 </section>
@@ -757,8 +757,8 @@ function syncSegs() {
 let toastT = null;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200); }
 function refreshHome() {
-  let p2 = null; try { p2 = JSON.parse(lsGet('mk-p2p') || 'null'); } catch (e) {}
-  const code = p2 && p2.code && p2.st ? p2.code : null;
+  let on = null; try { on = JSON.parse(lsGet('mk-on') || 'null'); } catch (e) {}
+  const code = on && on.code === lsGet('mk-last') ? on.code : null;
   const ro = $('#resumeOnline'); ro.hidden = !code; if (code) ro.textContent = 'Online-Partie ' + code + ' fortsetzen';
   let local = null; try { local = JSON.parse(lsGet('mk-local') || 'null'); } catch (e) {}
   $('#resumeLocal').hidden = !(local && local.g);
@@ -1055,7 +1055,7 @@ function render() {
     el.classList.toggle('turn', g.turn === p);
     el.innerHTML = `<span class="dot ${p}"></span><span class="pl-t"><span class="nm">${nameOf(p)}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen</span></span>`;
   });
-  $('#gameInfo').textContent = `Partie ${st.gameNo}, ${{ meister: 'Meisterspiel', grund: 'Basisspiel', einsteiger: 'Einsteigerspiel' }[st.mode]}${st.mata ? ' mit Mata' : ''}` + (app.kind === 'online' ? `, Code ${net.code}, ${net.connected ? 'verbunden' : 'nicht verbunden'}` : '');
+  $('#gameInfo').textContent = `Partie ${st.gameNo}, ${{ meister: 'Meisterspiel', grund: 'Basisspiel', einsteiger: 'Einsteigerspiel' }[st.mode]}${st.mata ? ' mit Mata' : ''}` + (app.kind === 'online' ? `, Code ${net.code}, ${net.connected ? 'online' : 'offline'}` : '');
   const act = canAct();
   let preview = null;
   if (g.phase === 'tane' && app.taneMode && app.taneDir !== null) preview = { who: g.turn, a: g.queue[0].a, d: app.taneDir };
@@ -1071,7 +1071,7 @@ function render() {
   } else if (g.phase === 'play') {
     if (app.pendingRev) s = 'Zug wird gesendet …';
     else if (act) s = app.sel !== null ? 'Noch einmal auf dieselbe Mulde tippen, um den Stein zu setzen.' : (app.kind === 'local' ? nameOf(who) + ' ist am Zug.' : 'Du bist am Zug.') + ' Tippe auf eine freie Mulde.';
-    else s = app.kind === 'bot' ? 'Der Meister denkt nach …' : net.connected ? 'Dein Freund ist am Zug …' : 'Dein Freund ist am Zug – wartet auf Verbindung …';
+    else s = app.kind === 'bot' ? 'Der Meister denkt nach …' : net.connected ? 'Dein Freund ist am Zug …' : 'Dein Freund ist am Zug – du bist gerade offline …';
   } else if (g.phase === 'tane') {
     const it = g.queue[0];
     if (act) {
@@ -1160,116 +1160,124 @@ function botTurn() {
     if (ns) commit(ns); else render();
   }, 450);
 }
-// ---------- Online über Peer-to-Peer (PeerJS) ----------
-const PREFIX = 'moeraki-kemu-kiehly-';
+// ---------- Online über einen MQTT-Relaisdienst (zwei öffentliche Broker parallel) ----------
+const BROKERS = ['wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884/mqtt'];
+const NS = 'kiehly-moeraki-kemu-app-v2/';
 const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const genCode = () => Array.from({ length: 4 }, () => ALPH[Math.floor(Math.random() * ALPH.length)]).join('');
-const net = { peer: null, conn: null, role: null, code: null, retry: null, connected: false };
-function saveP2P() { lsSet('mk-p2p', JSON.stringify({ code: net.code, role: net.role, me: app.me, st: app.st, rev: app.rev || 0 })); }
-function sendState(kind) {
-  if (net.conn && net.conn.open) { try { net.conn.send({ t: kind || 'state', st: app.st, rev: app.rev || 0, hostColor: net.role === 'host' ? app.me : null }); return true; } catch (e) {} }
-  return false;
-}
-async function commitOnline(ns) {
-  app.st = ns; app.rev = (app.rev || 0) + 1; saveP2P(); render();
-  if (!sendState()) toast('Dein Freund ist gerade nicht verbunden. Der Zug wird übertragen, sobald ihr wieder verbunden seid.');
+const genCode = () => Array.from({ length: 5 }, () => ALPH[Math.floor(Math.random() * ALPH.length)]).join('');
+const net = { clients: [], code: null, doc: null, joinTimer: null, mode: null };
+const isConn = () => net.clients.some(c => c.connected);
+Object.defineProperty(net, 'connected', { get: isConn });
+function saveOnline() { if (net.doc) lsSet('mk-on', JSON.stringify(net.doc)); lsSet('mk-last', net.code || ''); }
+function publish() {
+  if (!net.doc) return false;
+  const s = JSON.stringify(net.doc); let ok = false;
+  net.clients.forEach(c => { if (c.connected) { try { c.publish(NS + net.code, s, { qos: 1, retain: true }); ok = true; } catch (e) {} } });
+  return ok;
 }
 function closeOnline() {
-  clearTimeout(net.retry);
-  try { net.conn && net.conn.close(); } catch (e) {}
-  try { net.peer && net.peer.destroy(); } catch (e) {}
-  net.peer = net.conn = null; net.connected = false;
+  clearTimeout(net.joinTimer);
+  net.clients.forEach(c => { try { c.end(true); } catch (e) {} });
+  net.clients = []; net.doc = null; net.mode = null;
 }
-function onData(m) {
-  if (!m || (m.t !== 'state' && m.t !== 'hello')) return;
-  if (net.role === 'guest' && m.hostColor) app.me = MK.other(m.hostColor);
-  const r = m.rev || 0, mine = app.rev || 0;
-  if (m.st && (r > mine || (r === mine && net.role === 'guest') || !app.st)) { app.st = m.st; app.rev = r; app.phaseKey = ''; saveP2P(); }
-  else if (m.t === 'hello' && mine > r) sendState();
-  if (app.st && app.me) { if (app.screen !== 'game') show('game'); render(); }
+function connectAll(code) {
+  net.clients.forEach(c => { try { c.end(true); } catch (e) {} });
+  net.clients = []; net.code = code;
+  BROKERS.forEach(url => {
+    let c;
+    try { c = mqtt.connect(url, { clientId: 'mk_' + Math.random().toString(16).slice(2, 12), clean: true, connectTimeout: 8000, reconnectPeriod: 4000, keepalive: 30 }); }
+    catch (e) { return; }
+    c.on('connect', () => {
+      c.subscribe(NS + code, { qos: 1 });
+      if (net.doc && net.mode !== 'join-wait') { try { c.publish(NS + code, JSON.stringify(net.doc), { qos: 1, retain: true }); } catch (e) {} }
+      if (app.screen === 'game') render();
+    });
+    c.on('offline', () => { if (app.screen === 'game') render(); });
+    c.on('error', () => {});
+    c.on('message', (t, payload) => { let d = null; try { d = JSON.parse(payload.toString()); } catch (e) {} if (d) onDoc(d); });
+    net.clients.push(c);
+  });
 }
-function setupConn(conn) {
-  if (net.conn && net.conn !== conn) { try { net.conn.close(); } catch (e) {} }
-  net.conn = conn;
-  conn.on('open', () => { net.connected = true; sendState('hello'); toast('Verbunden mit deinem Freund.'); if (app.screen === 'game') render(); });
-  conn.on('data', onData);
-  const lost = () => {
-    if (net.conn !== conn) return;
-    net.connected = false; if (app.kind === 'online' && app.screen === 'game') { render(); toast('Verbindung zu deinem Freund unterbrochen.'); }
-    if (net.role === 'guest' && app.kind === 'online') { clearTimeout(net.retry); net.retry = setTimeout(guestConnect, 4000); }
-  };
-  conn.on('close', lost); conn.on('error', lost);
+function onDoc(d) {
+  if (!d || !d.players || !d.state || d.code !== net.code) return;
+  const cur = net.doc;
+  if (net.mode === 'join-wait') { // first answer while joining
+    clearTimeout(net.joinTimer); net.mode = null;
+    const p = d.players;
+    if (p.B !== app.id && p.W !== app.id) {
+      const slot = !p.B ? 'B' : !p.W ? 'W' : null;
+      if (!slot) { $('#joinErr').textContent = 'Diese Partie hat schon zwei Spieler.'; closeOnline(); show('online'); return; }
+      d = Object.assign({}, d, { players: Object.assign({}, p, { [slot]: app.id }) });
+      net.doc = d; publish();
+    }
+  }
+  if (cur && net.doc === cur) {
+    const r = d.rev || 0, mine = cur.rev || 0;
+    if (r < mine) { publish(); return; }                         // broker has an older state: heal it
+    if (r === mine) {                                             // same move: merge the player slots only
+      const pl = { B: cur.players.B || d.players.B || null, W: cur.players.W || d.players.W || null };
+      if (pl.B === cur.players.B && pl.W === cur.players.W) return;
+      const incomingLacks = pl.B !== d.players.B || pl.W !== d.players.W;
+      d = Object.assign({}, cur, { players: pl });
+      net.doc = d;
+      if (incomingLacks) publish();
+    }
+  }
+  if (net.doc !== d) net.doc = d;
+  app.st = net.doc.state; app.rev = net.doc.rev;
+  app.me = net.doc.players.B === app.id ? 'B' : net.doc.players.W === app.id ? 'W' : null;
+  saveOnline();
+  if (!app.me) return;
+  if (!(net.doc.players.B && net.doc.players.W)) { $('#waitCode').textContent = net.code; if (app.screen !== 'wait') show('wait'); return; }
+  if (app.screen !== 'game') show('game');
+  render();
 }
-function needPeer(el) {
-  if (typeof Peer === 'undefined') { $(el).textContent = 'Für das Online-Spiel braucht dein Handy eine Internetverbindung. Lade die App danach neu.'; return false; }
+async function commitOnline(ns) {
+  net.doc = Object.assign({}, net.doc, { state: ns, rev: (net.doc.rev || 0) + 1 });
+  app.st = ns; app.rev = net.doc.rev; saveOnline(); render();
+  if (!publish()) toast('Gerade keine Verbindung. Der Zug wird übertragen, sobald das Handy wieder online ist.');
+}
+function needMqtt(el) {
+  if (typeof mqtt === 'undefined') { $(el).textContent = 'Für das Online-Spiel braucht dein Handy eine Internetverbindung. Prüfe sie und öffne die App neu.'; return false; }
   return true;
 }
-function hostStart(code, isNew, errEl) {
-  closeOnline(); app.kind = 'online'; net.role = 'host'; net.code = code;
-  const peer = net.peer = new Peer(PREFIX + code);
-  peer.on('open', () => {
-    lsSet('mk-last', code); saveP2P();
-    if (isNew || !app.st || !net.connected) { $('#waitCode').textContent = code; if (!(app.st && app.st.g.moves > 0) || isNew) show('wait'); else { show('game'); render(); } }
-  });
-  peer.on('connection', c => setupConn(c));
-  peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
-  peer.on('error', e => {
-    if (e.type === 'unavailable-id') {
-      if (isNew) return hostStart(genCode(), true, errEl);
-      net.retry = setTimeout(() => hostStart(code, false, errEl), 5000); // old session still registered – try again shortly
-    } else if (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error') {
-      if (errEl) $(errEl).textContent = 'Keine Verbindung zum Vermittlungsserver. Prüfe dein Internet und versuche es noch einmal.';
-    }
-  });
-}
-function guestConnect() {
-  if (app.kind !== 'online' || net.role !== 'guest') return;
-  const go = () => setupConn(net.peer.connect(PREFIX + net.code, { reliable: true }));
-  if (net.peer && !net.peer.destroyed && net.peer.open) return go();
-  try { net.peer && net.peer.destroy(); } catch (e) {}
-  const peer = net.peer = new Peer();
-  peer.on('open', go);
-  peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
-  peer.on('error', e => {
-    if (e.type === 'peer-unavailable') {
-      if (!app.st) { $('#joinErr').textContent = 'Keine offene Partie mit dem Code ' + net.code + '. Dein Freund muss die App mit diesem Code geöffnet haben.'; show('online'); }
-      else { if (app.screen === 'game') render(); clearTimeout(net.retry); net.retry = setTimeout(guestConnect, 5000); }
-    } else if (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error') {
-      $('#joinErr').textContent = 'Keine Verbindung zum Vermittlungsserver. Prüfe dein Internet.';
-      clearTimeout(net.retry); net.retry = setTimeout(guestConnect, 6000);
-    }
-  });
-}
-$('#createBtn').addEventListener('click', () => {
-  $('#createErr').textContent = ''; if (!needPeer('#createErr')) return;
+$('#createBtn').addEventListener('click', async () => {
+  $('#createErr').textContent = ''; if (!needMqtt('#createErr')) return;
+  const id = await myId();
   const first = cfg.first === 'me' ? cfg.color : MK.other(cfg.color);
-  app.st = MK.newMatch({ mode: cfg.mode, target: +cfg.target, mata: cfg.mata === 'on', first });
-  app.me = cfg.color; app.rev = 1; app.phaseKey = '';
-  hostStart(genCode(), true, '#createErr');
+  const st = MK.newMatch({ mode: cfg.mode, target: +cfg.target, mata: cfg.mata === 'on', first });
+  const code = genCode(), players = { B: null, W: null }; players[cfg.color] = id;
+  closeOnline(); app.kind = 'online'; app.phaseKey = ''; app.me = cfg.color;
+  net.doc = { code, created: Date.now(), players, state: st, rev: 1 }; app.st = st; app.rev = 1;
+  connectAll(code); saveOnline();
+  $('#waitCode').textContent = code; show('wait');
+  setTimeout(() => { if (!isConn() && app.screen === 'wait') toast('Noch keine Verbindung zum Server … prüfe dein Internet.'); }, 9000);
 });
-function join(code) {
+async function join(code, resume) {
   code = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (code.length !== 4) { $('#joinErr').textContent = 'Der Code hat 4 Zeichen.'; return; }
-  if (!needPeer('#joinErr')) return;
-  closeOnline(); app.kind = 'online'; net.role = 'guest'; net.code = code; app.phaseKey = '';
-  let saved = null; try { saved = JSON.parse(lsGet('mk-p2p') || 'null'); } catch (e) {}
-  if (saved && saved.code === code && saved.role === 'guest') { app.st = saved.st; app.rev = saved.rev; app.me = saved.me; }
-  else { app.st = null; app.rev = 0; app.me = null; }
-  lsSet('mk-last', code);
-  $('#joinErr').textContent = 'Verbinde …';
-  guestConnect();
+  if (code.length < 4) { $('#joinErr').textContent = 'Bitte den Code vollständig eingeben.'; return; }
+  if (!needMqtt('#joinErr')) return;
+  await myId();
+  closeOnline(); app.kind = 'online'; app.phaseKey = '';
+  let saved = null; try { saved = JSON.parse(lsGet('mk-on') || 'null'); } catch (e) {}
+  if (saved && saved.code === code && (saved.players.B === app.id || saved.players.W === app.id)) {
+    net.doc = saved; net.code = code; app.st = saved.state; app.rev = saved.rev;
+    app.me = saved.players.B === app.id ? 'B' : 'W';
+    connectAll(code);
+    if (saved.players.B && saved.players.W) { show('game'); render(); } else { $('#waitCode').textContent = code; show('wait'); }
+    return;
+  }
+  net.mode = 'join-wait'; $('#joinErr').textContent = 'Verbinde …';
+  connectAll(code);
+  net.joinTimer = setTimeout(() => {
+    if (net.mode !== 'join-wait') return;
+    $('#joinErr').textContent = isConn() ? 'Keine Partie mit dem Code ' + code + ' gefunden. Prüfe den Code.' : 'Keine Verbindung zum Server. Prüfe dein Internet und versuche es noch einmal.';
+    closeOnline();
+  }, 9000);
 }
 $('#joinBtn').addEventListener('click', () => { $('#joinErr').textContent = ''; join($('#codeIn').value); });
 $('#codeIn').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
-$('#resumeOnline').addEventListener('click', () => {
-  let s = null; try { s = JSON.parse(lsGet('mk-p2p') || 'null'); } catch (e) {}
-  if (!s || !s.code) return;
-  if (s.role === 'host') {
-    if (!needPeer('#createErr')) { show('online'); return; }
-    app.st = s.st; app.rev = s.rev; app.me = s.me; app.phaseKey = '';
-    show('game'); hostStart(s.code, false, null); render();
-  } else { show('online'); $('#codeIn').value = s.code; join(s.code); }
-});
+$('#resumeOnline').addEventListener('click', () => { const code = lsGet('mk-last'); show('online'); $('#codeIn').value = code || ''; join(code, true); });
 $('#resumeLocal').addEventListener('click', () => {
   let st = null; try { st = JSON.parse(lsGet('mk-local') || 'null'); } catch (e) {}
   if (!st) return;
