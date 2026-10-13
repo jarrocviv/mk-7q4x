@@ -60,7 +60,8 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .code-big{font:700 64px/1 var(--serif);letter-spacing:.18em;text-align:center;margin:20px 0 6px;user-select:all}
 .err{color:var(--danger);min-height:1.4em;margin-top:8px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.link{background:none;border:0;padding:8px 2px;color:var(--ink-soft);font-size:16px}
+.link{background:none;border:0;padding:8px 2px;color:var(--ink-soft);font-size:16px;white-space:nowrap}
+#gameInfo{text-align:right;line-height:1.25}
 /* game */
 #game.screen{padding:10px 12px 16px}
 .players{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 8px}
@@ -85,7 +86,8 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .row{display:flex;gap:8px}
 .row .btn{text-align:center}
 .dirs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
-.dirs button{font-size:26px;padding:8px 0;border-radius:12px;border:1.5px solid var(--line);background:transparent}
+.dirs button small{display:block;font-size:11px;line-height:1.2;opacity:.8}
+.dirs button{font-size:26px;padding:6px 0;border-radius:12px;border:1.5px solid var(--line);background:transparent}
 .dirs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .meta{display:flex;justify-content:space-between;font-size:14px;color:var(--ink-soft);margin-top:6px}
 .rules h3{margin-top:22px}
@@ -95,6 +97,26 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .pages.z1 img{width:100%}.pages.z2 img{width:200%}.pages.z3 img{width:320%}
 .rules ul{padding-left:20px;margin:6px 0 10px}
 .rules li{margin-bottom:6px}
+.chat-fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:linear-gradient(180deg,#E6D2AE,#C9AC80);font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:20}
+.chat-fab .badge{position:absolute;top:-2px;right:-2px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#E0533D;color:#fff;font:700 13px/22px var(--sans)}
+.chat-panel{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;height:min(72vh,560px);background:var(--bg-2);border-radius:18px 18px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.45);display:flex;flex-direction:column;z-index:30;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.chat-panel[hidden]{display:none}
+.chat-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--serif);font-size:19px;padding:0 4px 6px}
+.chat-head .link{font-size:22px;padding:4px 8px}
+.chat-list{flex:1;overflow-y:auto;padding:6px 2px;display:flex;flex-direction:column;gap:6px}
+.chat-empty{text-align:center;margin-top:20px}
+.msg{display:flex;flex-direction:column;max-width:80%}
+.msg.me{align-self:flex-end;align-items:flex-end}.msg.them{align-self:flex-start}
+.bubble{padding:8px 12px;border-radius:16px;white-space:pre-wrap;word-break:break-word}
+.msg.me .bubble{background:#DCC49B;color:#1F1B15;border-bottom-right-radius:4px}
+.msg.them .bubble{background:rgba(255,255,255,.12);border-bottom-left-radius:4px}
+.msg .time{font-size:11px;color:var(--ink-soft);margin:2px 6px 0}
+.chat-quick{display:flex;gap:6px;overflow-x:auto;padding:8px 0}
+.chat-quick button{flex:0 0 auto;border:1.5px solid var(--line);background:transparent;border-radius:16px;padding:6px 10px;font-size:14px}
+.chat-in{display:flex;gap:8px}
+.chat-in input{flex:1;min-width:0;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font:inherit}
+.chat-in .btn{width:auto;padding:12px 16px}
+#game.screen{padding-bottom:90px}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -300,6 +322,13 @@ label.f{display:block;margin-top:14px;font-weight:700}
   <p class="soft" style="margin-top:18px">Moeraki-Kemu ist ein Spiel von Stefan Kiehl (Kiehly). Die Regeln hier sind eine Zusammenfassung der Spielanleitung; das wunderschöne Original aus Holz, Stein und Ton gibt es auf kiehly.de.</p>
 </section>
 
+<button id="chatBtn" class="chat-fab" hidden aria-label="Chat öffnen">💬<span id="chatBadge" class="badge" hidden></span></button>
+<div id="chatPanel" class="chat-panel" hidden role="dialog" aria-label="Chat">
+  <div class="chat-head"><b>Chat mit deinem Freund</b><button class="link" id="chatClose" aria-label="Chat schließen">✕</button></div>
+  <div id="chatList" class="chat-list" aria-live="polite"></div>
+  <div class="chat-quick" id="chatQuick"></div>
+  <div class="chat-in"><input id="chatIn" maxlength="300" placeholder="Nachricht schreiben …" autocomplete="off" enterkeyhint="send"><button id="chatSend" class="btn primary">Senden</button></div>
+</div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -741,6 +770,7 @@ async function myId() {
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
   app.screen = id; window.scrollTo(0, 0);
+  if (typeof renderChat === 'function') setTimeout(renderChat, 0);
   if (id === 'home') refreshHome();
 }
 document.addEventListener('click', e => {
@@ -1043,6 +1073,7 @@ function canAct() {
   if (app.kind === 'bot') return g.turn === app.me && !app.thinking;
   return g.turn === app.me;
 }
+function boardTurned() { return app.kind !== 'local' && app.me === 'W'; }
 function areaWord(it) { return MK.AREAS[it.a].tri ? 'ein Halbstrandfeld' : 'ein Strandfeld'; }
 
 function render() {
@@ -1059,7 +1090,7 @@ function render() {
   const act = canAct();
   let preview = null;
   if (g.phase === 'tane' && app.taneMode && app.taneDir !== null) preview = { who: g.turn, a: g.queue[0].a, d: app.taneDir };
-  $('#boardWrap').style.transform = app.kind !== 'local' && app.me === 'W' ? 'rotate(180deg)' : '';
+  $('#boardWrap').style.transform = boardTurned() ? 'rotate(180deg)' : '';
   $('#board').innerHTML = boardSVG(st, { interactive: true, sel: act ? app.sel : null, selKind: g.phase === 'ball' ? 'O' : g.turn, ballHints: act && g.phase === 'ball', preview });
 
   // status + actions
@@ -1083,7 +1114,14 @@ function render() {
       } else {
         const arrows = ['↖', '↗', '↘', '↙'];
         html += `<p>Wohin blickt dein Tane? Gelb markierte Felder werden geräumt und bleiben gesperrt. Ein gelber Ring zeigt, wo sich die Blicke beider Tane kreuzen – dort darf wieder ein Plättchen liegen.</p><div class="dirs">` +
-          arrows.map((ar, i) => `<button data-dir="${i}" aria-pressed="${app.taneDir === i}" aria-label="Blickrichtung ${ar}">${ar}</button>`).join('') +
+          arrows.map((ar, i) => {
+            // the arrow is what the player sees on screen; on a board turned by 180° it means the opposite board direction
+            const d = boardTurned() ? (i + 2) % 4 : i;
+            const line = MK.sightLine(g, who, d, it.a), cr = new Set(MK.crossings(g, who, d, it.a));
+            const hit = line.filter(a => g.tiles[a] && !cr.has(a)).length;
+            const sub = !line.length ? 'Rand' : hit ? `räumt ${hit}` : 'räumt 0';
+            return `<button data-dir="${d}" aria-pressed="${app.taneDir === d}" aria-label="Blickrichtung ${ar}, ${sub}">${ar}<small>${sub}</small></button>`;
+          }).join('') +
           `</div><div class="row"><button class="btn" id="tBack">Zurück</button><button class="btn primary" id="tGo" ${app.taneDir === null ? 'disabled' : ''}>Tane hinstellen</button></div>`;
       }
       html += `</div>`;
@@ -1105,6 +1143,7 @@ function render() {
   }
   $('#status').textContent = s;
   $('#actions').innerHTML = html;
+  if (typeof renderChat === 'function') renderChat();
 }
 
 function attempt(fn) {
@@ -1165,7 +1204,7 @@ const BROKERS = ['wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884
 const NS = 'kiehly-moeraki-kemu-app-v2/';
 const ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const genCode = () => Array.from({ length: 5 }, () => ALPH[Math.floor(Math.random() * ALPH.length)]).join('');
-const net = { clients: [], code: null, doc: null, joinTimer: null, mode: null };
+const net = { clients: [], code: null, doc: null, joinTimer: null, mode: null, chat: { B: [], W: [] } };
 const isConn = () => net.clients.some(c => c.connected);
 Object.defineProperty(net, 'connected', { get: isConn });
 function saveOnline() { if (net.doc) lsSet('mk-on', JSON.stringify(net.doc)); lsSet('mk-last', net.code || ''); }
@@ -1178,9 +1217,10 @@ function publish() {
 function closeOnline() {
   clearTimeout(net.joinTimer);
   net.clients.forEach(c => { try { c.end(true); } catch (e) {} });
-  net.clients = []; net.doc = null; net.mode = null;
+  net.clients = []; net.doc = null; net.mode = null; net.chat = { B: [], W: [] }; closeChat();
 }
 function connectAll(code) {
+  try { net.chat = JSON.parse(lsGet('mk-chat-' + code) || 'null') || { B: [], W: [] }; } catch (e) { net.chat = { B: [], W: [] }; }
   net.clients.forEach(c => { try { c.end(true); } catch (e) {} });
   net.clients = []; net.code = code;
   BROKERS.forEach(url => {
@@ -1188,13 +1228,19 @@ function connectAll(code) {
     try { c = mqtt.connect(url, { clientId: 'mk_' + Math.random().toString(16).slice(2, 12), clean: true, connectTimeout: 8000, reconnectPeriod: 4000, keepalive: 30 }); }
     catch (e) { return; }
     c.on('connect', () => {
-      c.subscribe(NS + code, { qos: 1 });
+      c.subscribe([NS + code, NS + code + '/chat/+'], { qos: 1 });
+      const mine = net.chat[app.me];
+      if (app.me && mine && mine.length) { try { c.publish(NS + code + '/chat/' + app.me, JSON.stringify(mine), { qos: 1, retain: true }); } catch (e) {} }
       if (net.doc && net.mode !== 'join-wait') { try { c.publish(NS + code, JSON.stringify(net.doc), { qos: 1, retain: true }); } catch (e) {} }
       if (app.screen === 'game') render();
     });
     c.on('offline', () => { if (app.screen === 'game') render(); });
     c.on('error', () => {});
-    c.on('message', (t, payload) => { let d = null; try { d = JSON.parse(payload.toString()); } catch (e) {} if (d) onDoc(d); });
+    c.on('message', (t, payload) => {
+      let d = null; try { d = JSON.parse(payload.toString()); } catch (e) {}
+      if (!d) return;
+      if (t.startsWith(NS + code + '/chat/')) onChat(t.slice(-1), d); else onDoc(d);
+    });
     net.clients.push(c);
   });
 }
@@ -1232,6 +1278,52 @@ function onDoc(d) {
   if (app.screen !== 'game') show('game');
   render();
 }
+// ----- Chat -----
+const QUICK = ['Guter Zug! 👍', 'Oh nein 😅', 'Du bist dran', 'Glückwunsch! 🎉', 'Revanche?', 'Bis später 👋'];
+function chatSeen() { return +(lsGet('mk-chat-seen-' + net.code) || 0); }
+function unread() { const o = app.me && MK.other(app.me); return o ? (net.chat[o] || []).filter(m => m.t > chatSeen()).length : 0; }
+function onChat(color, arr) {
+  if (!Array.isArray(arr) || (color !== 'B' && color !== 'W')) return;
+  const cur = net.chat[color] || [], seen = new Set(cur.map(m => m.t)), fresh = [];
+  arr.forEach(m => { if (m && typeof m.t === 'number' && typeof m.m === 'string' && !seen.has(m.t)) { cur.push({ t: m.t, m: m.m.slice(0, 300) }); fresh.push(m); } });
+  net.chat[color] = cur.sort((a, b) => a.t - b.t).slice(-40);
+  lsSet('mk-chat-' + net.code, JSON.stringify(net.chat));
+  if (color !== app.me && fresh.length && !$('#chatPanel').classList.contains('on') && Date.now() - fresh[fresh.length - 1].t < 120000) toast('💬 ' + fresh[fresh.length - 1].m.slice(0, 80));
+  renderChat();
+}
+function sendChat(text) {
+  text = (text || '').trim().slice(0, 300); if (!text || !app.me || !net.code) return;
+  const mine = net.chat[app.me] = (net.chat[app.me] || []).concat([{ t: Date.now(), m: text }]).slice(-40);
+  lsSet('mk-chat-' + net.code, JSON.stringify(net.chat));
+  let ok = false;
+  net.clients.forEach(c => { if (c.connected) { try { c.publish(NS + net.code + '/chat/' + app.me, JSON.stringify(mine), { qos: 1, retain: true }); ok = true; } catch (e) {} } });
+  if (!ok) toast('Gerade offline. Die Nachricht wird gesendet, sobald du wieder online bist.');
+  renderChat();
+}
+function renderChat() {
+  const btn = $('#chatBtn'); if (!btn) return;
+  const show_ = app.kind === 'online' && !!app.me && (app.screen === 'game' || app.screen === 'wait');
+  btn.hidden = !show_;
+  const n = unread(), badge = $('#chatBadge'); badge.hidden = !n || $('#chatPanel').classList.contains('on'); badge.textContent = n > 9 ? '9+' : n;
+  if (!$('#chatPanel').classList.contains('on')) return;
+  const all = [];
+  ['B', 'W'].forEach(c => (net.chat[c] || []).forEach(m => all.push({ c, t: m.t, m: m.m })));
+  all.sort((a, b) => a.t - b.t);
+  const list = $('#chatList'); list.textContent = '';
+  if (!all.length) { const e = document.createElement('p'); e.className = 'soft chat-empty'; e.textContent = 'Noch keine Nachrichten. Schreib deinem Freund etwas!'; list.appendChild(e); }
+  all.forEach(x => {
+    const d = document.createElement('div'); d.className = 'msg ' + (x.c === app.me ? 'me' : 'them');
+    const b = document.createElement('span'); b.className = 'bubble'; b.textContent = x.m;
+    const t = document.createElement('span'); t.className = 'time';
+    const dt = new Date(x.t), today = new Date().toDateString() === dt.toDateString();
+    t.textContent = (today ? '' : dt.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ') + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    d.appendChild(b); d.appendChild(t); list.appendChild(d);
+  });
+  list.scrollTop = list.scrollHeight;
+  if (all.length) lsSet('mk-chat-seen-' + net.code, String(all[all.length - 1].t));
+}
+function openChat() { $('#chatPanel').classList.add('on'); $('#chatPanel').hidden = false; renderChat(); setTimeout(() => $('#chatIn').focus(), 50); }
+function closeChat() { const p = $('#chatPanel'); if (!p) return; p.classList.remove('on'); p.hidden = true; renderChat(); }
 async function commitOnline(ns) {
   net.doc = Object.assign({}, net.doc, { state: ns, rev: (net.doc.rev || 0) + 1 });
   app.st = ns; app.rev = net.doc.rev; saveOnline(); render();
@@ -1310,6 +1402,12 @@ $('#leaveBtn').addEventListener('click', () => { closeOnline(); app.botToken = (
 $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); });
 
 // ---------- init ----------
+$('#chatQuick').innerHTML = QUICK.map(q => `<button type="button">${q}</button>`).join('');
+$('#chatQuick').addEventListener('click', e => { const b = e.target.closest('button'); if (b) sendChat(b.textContent); });
+$('#chatBtn').addEventListener('click', openChat);
+$('#chatClose').addEventListener('click', closeChat);
+$('#chatSend').addEventListener('click', () => { sendChat($('#chatIn').value); $('#chatIn').value = ''; $('#chatIn').focus(); });
+$('#chatIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#chatSend').click(); } });
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
 syncSegs();
 const hero = MK.newMatch({}); hero.g.board[MK.HIDX['0,0']] = 'O';
