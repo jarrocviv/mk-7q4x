@@ -111,8 +111,13 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .pres{display:inline-block;width:10px;height:10px;border-radius:50%;background:#7C8597;margin-left:7px;vertical-align:middle}
 .pres.on{background:#4CC27A;box-shadow:0 0 0 3px rgba(76,194,122,.25)}
 #chatPanel{position:static;height:auto;max-width:none;margin:12px 0 0;border-radius:16px;box-shadow:none;background:var(--panel);border:1.5px solid var(--line);padding:10px 10px 12px;z-index:auto}
-#chatPanel .chat-head{font-size:17px;padding:0 2px 4px}
-#chatPanel .chat-list{max-height:210px;min-height:56px;flex:none}
+#chatPanel{padding:8px}
+#chatPanel .chat-in{gap:6px}
+#chatPanel .chat-in input{padding:8px 10px;border-radius:10px;font-size:16px}
+#chatPanel .chat-in .btn{padding:6px 14px;font-size:18px;border-radius:10px}
+#chatPanel .chat-quick{padding:6px 0 4px;gap:5px}
+#chatPanel .chat-quick button{padding:3px 9px;font-size:13px;border-radius:12px}
+#chatPanel .chat-list{max-height:190px;min-height:40px;flex:none;overscroll-behavior:contain;border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
 #chatPanel .chat-empty{margin:10px 0}
 #game.screen{padding-bottom:24px}
 .chat-fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:linear-gradient(180deg,#E6D2AE,#C9AC80);font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:20}
@@ -160,7 +165,7 @@ label.f{display:block;margin-top:14px;font-weight:700}
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">🔔 Ton &amp; Benachrichtigungen</button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 8</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 9</p>
   </div>
 </section>
 
@@ -343,11 +348,11 @@ label.f{display:block;margin-top:14px;font-weight:700}
 </section>
 
 <button id="chatBtn" class="chat-fab" hidden aria-label="Chat öffnen">💬<span id="chatBadge" class="badge" hidden></span></button>
-<div id="chatPanel" class="chat-panel" hidden role="dialog" aria-label="Chat">
-  <div class="chat-head"><b>Chat</b><button class="link" id="chatClose" hidden aria-label="Chat schließen">✕</button></div>
-  <div id="chatList" class="chat-list" aria-live="polite"></div>
+<div id="chatPanel" class="chat-panel" hidden role="region" aria-label="Chat">
+  <button class="link" id="chatClose" hidden aria-label="Chat schließen">✕</button>
+  <div class="chat-in"><input id="chatIn" maxlength="300" placeholder="💬 Nachricht an deinen Freund …" autocomplete="off" enterkeyhint="send" aria-label="Chat-Nachricht"><button id="chatSend" class="btn primary" aria-label="Senden">➤</button></div>
   <div class="chat-quick" id="chatQuick"></div>
-  <div class="chat-in"><input id="chatIn" maxlength="300" placeholder="Nachricht schreiben …" autocomplete="off" enterkeyhint="send"><button id="chatSend" class="btn primary">Senden</button></div>
+  <div id="chatList" class="chat-list" aria-live="polite"></div>
 </div>
 <div id="setPanel" class="chat-panel" hidden role="dialog" aria-label="Ton und Benachrichtigungen">
   <div class="chat-head"><b>Ton &amp; Benachrichtigungen</b><button class="link" id="setClose" aria-label="Schließen">✕</button></div>
@@ -1481,7 +1486,7 @@ function renderChat() {
   if (!vis) return;
   const all = [];
   ['B', 'W'].forEach(c => (net.chat[c] || []).forEach(m => all.push({ c, t: m.t, m: m.m })));
-  all.sort((a, b) => a.t - b.t);
+  all.sort((a, b) => b.t - a.t); // newest first
   const list = $('#chatList'); list.textContent = '';
   if (!all.length) { const e = document.createElement('p'); e.className = 'soft chat-empty'; e.textContent = 'Noch keine Nachrichten. Schreib deinem Freund etwas!'; list.appendChild(e); }
   all.forEach(x => {
@@ -1492,8 +1497,8 @@ function renderChat() {
     t.textContent = (today ? '' : dt.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ') + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     d.appendChild(b); d.appendChild(t); list.appendChild(d);
   });
-  list.scrollTop = list.scrollHeight;
-  if (all.length) lsSet('mk-chat-seen-' + net.code, String(all[all.length - 1].t));
+  list.scrollTop = 0;
+  if (all.length) lsSet('mk-chat-seen-' + net.code, String(all[0].t));
 }
 function openChat() { $('#chatPanel').classList.add('on'); $('#chatPanel').hidden = false; renderChat(); setTimeout(() => $('#chatIn').focus(), 50); }
 function closeChat() { const p = $('#chatPanel'); if (!p) return; p.classList.remove('on'); p.hidden = true; renderChat(); }

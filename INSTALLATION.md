@@ -1,6 +1,5 @@
 # Moeraki-Kemu – eigenständige App
 
-
 ## Was ohne Internet geht
 - Zu zweit auf einem Handy
 - Gegen den Meister (Bot)
