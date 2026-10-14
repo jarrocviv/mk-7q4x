@@ -195,7 +195,7 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 12</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 13</p>
   </div>
 </section>
 
@@ -1432,7 +1432,7 @@ $('#practice').addEventListener('click', e => {
       try {
         app.hintText = '';
         if (g.phase === 'ball') { app.hint = AI.chooseBall(st); app.hintText = 'Tipp: Lege die Kugel in die markierte Mulde.'; }
-        else if (g.phase === 'play') { app.hint = AI.bestMove(st, app.me, 2500, { varied: false }); app.hintText = 'Tipp: Der markierte Platz ist der beste Zug.'; }
+        else if (g.phase === 'play') { app.hint = AI.bestMove(st, app.me, 5000, { varied: false }); app.hintText = 'Tipp: Der markierte Platz ist der beste Zug.'; }
         else if (g.phase === 'tane') { const c = AI.chooseTane(st, app.me); app.hint = null; if (c.use) { app.taneMode = true; app.taneDir = c.dir; app.hintText = 'Tipp: Setz den Tane in die vorgewählte Richtung.'; } else app.hintText = 'Tipp: Hier lieber das Plättchen legen.'; }
       } catch (err) { console.error(err); }
       render();
@@ -1496,7 +1496,7 @@ function botTurn() {
     try {
       if (g.phase === 'ball') ns = MK.placeBall(st, AI.chooseBall(st), bot);
       else if (g.phase === 'tane') { const c = AI.chooseTane(st, bot); ns = MK.resolveTane(st, bot, c.use, c.dir); }
-      else if (g.phase === 'play') ns = MK.placeStone(st, AI.bestMove(st, bot, 2800), bot);
+      else if (g.phase === 'play') ns = MK.placeStone(st, AI.bestMove(st, bot, 5000), bot);
     } catch (e) { console.error(e); }
     app.thinking = false;
     app.hintText = '';
