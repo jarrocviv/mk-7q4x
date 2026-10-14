@@ -26,7 +26,8 @@ Diese App ist eine private, nicht offizielle Umsetzung für den eigenen Spielkre
 **Spielmodi**
 - **Online gegen einen Freund** – jeder auf seinem eigenen Handy, auch zeitversetzt
 - **Zu zweit auf einem Gerät** – das Handy wird weitergereicht
-- **Gegen den Meister** – ein Computergegner, der mehrere Züge vorausrechnet und keinen Fehler verzeiht
+- **Gegen den Meister** – ein Computergegner, der mehrere Züge vorausrechnet, keinen Fehler verzeiht und immer wieder andere Varianten spielt
+- **Übungsmodus** gegen den Meister – warnt vor Gefahren („Vorsicht, Spielende in 3 Zügen möglich“), zeigt auf Wunsch den besten Zug und erlaubt das Zurücknehmen von Zügen
 
 **Regeln nach der Originalanleitung (3. Auflage)**
 - Einsteigerspiel, Basisspiel und Meisterspiel mit dem Maori-Tane
@@ -37,7 +38,9 @@ Diese App ist eine private, nicht offizielle Umsetzung für den eigenen Spielkre
 
 **Außerdem**
 - Spielbrett im Stil des Holz-Originals mit Skala, Lagerhäusern und Kugelablagen
-- Chat unter dem Spielbrett mit Schnellantworten
+- Chat unter dem Spielbrett mit Schnellantworten und Anzeige, wenn der andere gerade schreibt
+- Nach Spielende stehen auf allen Kugeln die Zugnummern – so lässt sich der Spielverlauf nachvollziehen
+- Zählleiste von Schwarz wahlweise weiß (wie im Original) oder schwarz
 - Eigener Klang, wenn der Freund gezogen hat oder ins Spiel kommt
 - Push-Benachrichtigungen aufs Handy, auch wenn die App geschlossen ist
 - Originale Spielanleitung zum Durchblättern und eine Kurzfassung der Regeln
@@ -97,7 +100,7 @@ Ein eigener Server ist nicht nötig.
 
 ## Ton und Benachrichtigungen
 
-Einstellungen über **🔔** oben im Spiel oder im Startmenü.
+Einstellungen über **🔔** oben im Spiel oder **⚙️ Einstellungen** im Startmenü.
 
 | Funktion | Wann sie wirkt |
 |---|---|
