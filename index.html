@@ -146,6 +146,11 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .sheet.dock .btn{padding:10px 12px;font-size:16px}
 .sheet.dock .dirs{margin:4px 0 8px;gap:6px}
 .sheet.dock .dirs button{font-size:22px;padding:3px 0}
+.sheet.dock.slim{position:static;max-width:none;margin:8px 0 0;border-radius:14px;box-shadow:none;border:1.5px solid #EADB4C;padding:8px 10px 10px;max-height:none;background:var(--bg-2)}
+.sheet.dock.slim p{font-size:15px;margin:0 0 8px}
+.sheet.dock.slim .foe{color:#FF8A73}.sheet.dock.slim .own{color:#F0B45A}
+body.slimdock #boardWrap{max-width:min(520px,max(250px,calc(100vh - 290px)));max-width:min(520px,max(250px,calc(100dvh - 290px)))}
+body.slimdock .status{display:none}
 body.docked .status{display:none}
 body.docked #game.screen{padding-bottom:240px}
 body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-width:min(520px,max(250px,calc(100dvh - 380px)))}
@@ -226,7 +231,7 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 14</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 16</p>
   </div>
 </section>
 
@@ -1296,6 +1301,14 @@ function boardSVG(st, o) {
     });
   }
   g.tiles.forEach((t, a) => { if (t) out.push(tileSVG(p, a, t)); });
+  if (o.preview) {
+    const cr2 = new Set(MK.crossings(g, o.preview.who, o.preview.d, o.preview.a));
+    MK.sightLine(g, o.preview.who, o.preview.d, o.preview.a).forEach(a => {
+      const t = g.tiles[a]; if (!t || cr2.has(a)) return;
+      const [x, y] = AC(a), col = t.o === o.preview.who ? '#F0A33A' : '#E0533D';
+      out.push(`<g><circle cx="${x}" cy="${y}" r="3.9" fill="${col}" stroke="#fff" stroke-width=".6"/><path d="M${x - 1.6} ${y - 1.6}L${x + 1.6} ${y + 1.6}M${x + 1.6} ${y - 1.6}L${x - 1.6} ${y + 1.6}" stroke="#fff" stroke-width="1" stroke-linecap="round"/></g>`);
+    });
+  }
   ['B', 'W'].forEach(q => { const t = g.tanes[q]; if (t) out.push(lineSVG(t.a, MK.sightLine(g, q), '#EADB4C', 1.4)); });
   if (o.preview) out.push(lineSVG(o.preview.a, preview, '#EADB4C', 1.6));
   if (o.ballHints) MK.CENTRAL.forEach(i => { if (i === g.prevBall) return; const [x, y] = P(i); out.push(`<circle class="pulse" cx="${x}" cy="${y}" r="5.6" fill="none" stroke="#EADB4C" stroke-width=".9" stroke-dasharray=".1 1.5" stroke-linecap="round"/>`); });
@@ -1389,17 +1402,23 @@ function render() {
       let ask = `<b>${s}</b>`;
       if (!app.taneMode) {
         ask += `<small>Plättchen legen – oder einmalig den Maori-Tane einsetzen.</small><div class="row"><button class="btn" id="tTile">Plättchen legen</button><button class="btn primary" id="tTane">Maori-Tane</button></div>`;
-      } else {
-        let info = 'Tippe am Feld auf einen der gelben Pfeile.';
+      }
+      if (app.taneMode) { // only board, Tane and arrows – the controls sit in a slim bar at the bottom
+        let info = 'Tippe am Tane auf einen der gelben Pfeile.';
         if (app.taneDir !== null) {
           const line = MK.sightLine(g, who, app.taneDir, it.a), cr = new Set(MK.crossings(g, who, app.taneDir, it.a));
-          const hit = line.filter(a => g.tiles[a] && !cr.has(a)).length;
-          info = !line.length ? 'Blickt direkt aus dem Spielfeld – bewirkt nichts.' : `Räumt ${hit} ${hit === 1 ? 'Plättchen' : 'Plättchen'} und sperrt ${line.length - cr.size} ${line.length - cr.size === 1 ? 'Feld' : 'Felder'}.`;
+          const gone = line.filter(a => g.tiles[a] && !cr.has(a));
+          const theirs = gone.filter(a => g.tiles[a].o !== who).length, mine = gone.length - theirs;
+          const back = [...cr].filter(a => !g.tiles[a] && g.removed[a]).length;
+          info = !line.length ? 'Blickt direkt aus dem Spielfeld – bewirkt nichts.'
+            : `<b class="foe">${theirs} vom Gegner</b> entfernt` + (mine ? `, <b class="own">${mine} eigene${mine === 1 ? 's' : ''}</b>` : '') + `; ${line.length - cr.size} ${line.length - cr.size === 1 ? 'Feld' : 'Felder'} gesperrt` + (back ? `, ${back} kommt zurück` : '') + '.';
         }
-        ask += `<small>${info}</small><div class="row"><button class="btn" id="tBack">Zurück</button><button class="btn primary" id="tGo" ${app.taneDir === null ? 'disabled' : ''}>Tane hinstellen</button></div>`;
+        html = `<div class="sheet dock slim"><p>${info}</p><div class="row"><button class="btn" id="tBack">Zurück</button><button class="btn primary" id="tGo" ${app.taneDir === null ? 'disabled' : ''}>Tane hinstellen</button></div></div>`;
+        s = '';
+      } else {
+        askHtml = ask; s = '';
+        const [, ay] = AC(it.a); askTop = (boardTurned() ? -ay : ay) > 0;
       }
-      askHtml = ask; s = '';
-      const [, ay] = AC(it.a); askTop = (boardTurned() ? -ay : ay) > 0;
     } else s = OPP() + ' hat ' + areaWord(it) + ' gewonnen und entscheidet über seinen Maori-Tane …';
   } else if (g.phase === 'over' && fxOn) {
     s = '';
@@ -1419,9 +1438,12 @@ function render() {
     html += `</div>`;
   }
   $('#status').textContent = s;
-  $('#actions').innerHTML = html;
+  const slim = html.indexOf('dock slim') >= 0;
+  $('#underBoard').innerHTML = slim ? html : '';
+  $('#actions').innerHTML = slim ? '' : html;
   const ask = $('#ask'); ask.innerHTML = askHtml; ask.hidden = !askHtml; ask.classList.toggle('at-top', askTop);
-  document.body.classList.toggle('docked', html.indexOf('sheet dock') >= 0);
+  document.body.classList.toggle('docked', !slim && html.indexOf('sheet dock') >= 0);
+  document.body.classList.toggle('slimdock', slim);
   if (typeof renderChat === 'function') renderChat();
   renderPractice();
 }
@@ -1941,7 +1963,8 @@ $('#leaveBtn').addEventListener('click', () => { closeOnline(); app.botToken = (
 $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); });
 
 // ---------- init ----------
-(() => { const wrap = $('#boardWrap'), host = document.createElement('div'); host.className = 'board-host'; wrap.parentNode.insertBefore(host, wrap); host.appendChild(wrap); host.appendChild($('#ask')); })();
+(() => { const wrap = $('#boardWrap'), host = document.createElement('div'); host.className = 'board-host'; wrap.parentNode.insertBefore(host, wrap); host.appendChild(wrap); host.appendChild($('#ask'));
+  const ub = document.createElement('div'); ub.id = 'underBoard'; host.parentNode.insertBefore(ub, host.nextSibling); ub.addEventListener('click', onAction); })();
 $('#game').appendChild($('#chatPanel'));
 $('#bellBtn').addEventListener('click', () => { renderSettings(); $('#setPanel').hidden = false; });
 $('#homeBell').addEventListener('click', () => { renderSettings(); $('#setPanel').hidden = false; });
