@@ -195,7 +195,7 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 11</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 12</p>
   </div>
 </section>
 
@@ -630,7 +630,23 @@ const AI = (() => {
   let PW = [0, 160, 60, 16, 4, 1.5, .7, .4, .2, .1];   // tuned by self-play   // value of an open pattern by remaining empties
   const OW = [0, 0, 70, 14, 4, 1.5, .8, .5, .3, .2];   // move ordering: advancing an own pattern
   const DW = [0, 500, 55, 10, 3, 1, .5, .3, .2, .1];   // move ordering: spoiling an opponent pattern
-  let TW = 38, IW = 1.6, TEMPO = 1.4;                              // tile point weight, area influence weight
+  let TW = 38, IW = 1.15, TEMPO = 1.4;   // tuned by self-play
+  // expected tile value (Black's view) of an unfinished field: EXP[tri][nB][nW][empties], every empty filled 50/50
+  const EXP = [0, 1].map(tri => {
+    const t = [];
+    for (let nb = 0; nb <= 4; nb++) { t[nb] = []; for (let nw = 0; nw <= 4; nw++) { t[nb][nw] = []; for (let e = 0; e <= 4; e++) {
+      let sum = 0;
+      for (let k = 0; k <= e; k++) { // k of the empties become black
+        const c = [1, e, e * (e - 1) / 2, e * (e - 1) * (e - 2) / 6, 1][k] || 1, ways = k === 0 || k === e ? 1 : c;
+        const B = nb + k, W = nw + e - k;
+        let v = 0;
+        if (B !== W) { const n = Math.max(B, W), val = tri ? (n === 3 ? 1 : .5) : 1; v = B > W ? val : -val; }
+        sum += ways * v;
+      }
+      t[nb][nw][e] = sum / Math.pow(2, e);
+    } } }
+    return t;
+  });                              // tile point weight, area influence weight
   let noTiles = false, b, pats, psize, cnt, holePats, blockedA, baseFull, rootDiff, ballPlacer, empties, deadline, nodes, tt, zob, hash, killers;
 
   function setup(st) {
@@ -691,7 +707,7 @@ const AI = (() => {
       const A = AR[a]; let nB = 0, nW = 0, e = 0;
       for (const v of A.v) { const x = b[v]; if (x === 1) nB++; else if (x === 2) nW++; else if (x === 0) e++; }
       if (e === 0) t += areaVal(A, a);
-      else if (withInfl && !blockedA[a]) infl += (nB - nW) * (A.tri ? .6 : 1);
+      else if (withInfl && !blockedA[a]) infl += EXP[A.tri ? 1 : 0][nB][nW][e];
     }
     return withInfl ? [t, infl] : t;
   }
@@ -704,7 +720,7 @@ const AI = (() => {
       else if (y) s -= PW[psize[i] - y] * (p === 2 ? TEMPO : 1);
     }
     const [t, infl] = tileDiff(true);
-    s += t * TW + infl * IW;
+    s += (t + infl * IW) * TW;
     return p === 1 ? s : -s;
   }
   function final(p, ply) {
@@ -714,6 +730,57 @@ const AI = (() => {
     const v = WIN / 2 - ply + Math.abs(t) * 10;
     return w === p ? v : -v;
   }
+  // ----- VCF: win by a chain of immediate threats (each forces exactly one reply) -----
+  let vcfNodes = 0, vcfBudget = 0;
+  function threatMakers(p) { // empty holes that turn an own pattern into an immediate threat
+    const cp = cnt[p], co = cnt[3 - p], out = [];
+    for (let i = 0; i < pats.length; i++) if (co[i] === 0 && psize[i] - cp[i] === 2) {
+      const l = pats[i]; for (let k = 0; k < l.length; k++) if (!b[l[k]] && !out.includes(l[k])) out.push(l[k]);
+    }
+    return out;
+  }
+  function vcf(p, depth) { // p to move; true if p wins by continuous threats
+    if (++vcfNodes > vcfBudget) return false;
+    const o = 3 - p;
+    if (hasWin(p)) return true;
+    if (depth <= 0) return false;
+    const ot = threats(o);
+    if (ot.length >= 2) return false;
+    let cands = threatMakers(p);
+    if (ot.length === 1) cands = cands.includes(ot[0]) ? [ot[0]] : [];
+    for (const h of cands) {
+      make(h, p);
+      let win = false;
+      if (!hasWin(o)) {
+        const my = threats(p);
+        if (my.length >= 2) win = true;
+        else if (my.length === 1) { const blk = my[0]; make(blk, o); win = vcf(p, depth - 1); unmake(blk, o); }
+      }
+      unmake(h, p);
+      if (win) return true;
+    }
+    return false;
+  }
+  function vcfMove(p, depth, budget) { // first move of a VCF, or -1
+    vcfNodes = 0; vcfBudget = budget;
+    const o = 3 - p, ot = threats(o);
+    if (ot.length >= 2) return -1;
+    let cands = threatMakers(p);
+    if (ot.length === 1) cands = cands.includes(ot[0]) ? [ot[0]] : [];
+    for (const h of cands) {
+      make(h, p);
+      let win = false;
+      if (!hasWin(o)) {
+        const my = threats(p);
+        if (my.length >= 2) win = true;
+        else if (my.length === 1) { const blk = my[0]; make(blk, o); win = vcf(p, depth - 1); unmake(blk, o); }
+      }
+      unmake(h, p);
+      if (win) return h;
+    }
+    return -1;
+  }
+  function oppHasVcf(o, depth, budget) { vcfNodes = 0; vcfBudget = budget; return vcf(o, depth); }
   let noise = 0;
   function genMoves(p, limit, first, ply) {
     const o = 3 - p, cp = cnt[p], co = cnt[o], list = [];
@@ -741,7 +808,11 @@ const AI = (() => {
     if (empties === 0) return final(p, ply);
     const ot = threats(o);
     if (ot.length >= 2) return -(WIN - ply - 1);
-    if (depth <= 0 && ot.length === 0) return evaluate(p);
+    if (depth <= 0 && ot.length === 0) {
+      vcfNodes = 0; vcfBudget = 400;
+      if (vcf(p, 8)) return WIN - ply - 4;
+      return evaluate(p);
+    }
     const key = hash * 2 + p, e = tt.get(key);
     let ttMove = -1;
     if (e) {
@@ -752,7 +823,7 @@ const AI = (() => {
         if (e.f === 2 && e.v <= alpha) return e.v;
       }
     }
-    const moves = ot.length === 1 ? ot : genMoves(p, depth >= 4 ? 12 : depth >= 2 ? 10 : 8, ttMove, ply);
+    const moves = ot.length === 1 ? ot : genMoves(p, empties <= 9 ? 99 : depth >= 4 ? 12 : depth >= 2 ? 10 : 8, ttMove, ply);
     const nd = ot.length === 1 ? depth : depth - 1; // forced replies don't use up depth
     let best = -Infinity, bestM = moves[0]; const a0 = alpha;
     for (const m of moves) {
@@ -773,10 +844,20 @@ const AI = (() => {
     const mine = threats(p); if (mine.length) return { best: mine[0], cands: [[mine[0], WIN]], v: WIN };
     const ot = threats(o); if (ot.length === 1) return { best: ot[0], cands: [[ot[0], 0]], v: 0 };
     deadline = performance.now() + ms; nodes = 0;
-    let best = genMoves(p, 99, -1, 0)[0], bestV = -Infinity, cands = [[best, 0]];
+    // a forced win by continuous threats?
+    const vm = vcfMove(p, 14, 60000);
+    if (vm >= 0) return { best: vm, cands: [[vm, WIN - 30]], v: WIN - 30 };
+    // which of my moves would allow the opponent a forced win by continuous threats?
+    const unsafe = new Set();
+    for (const m of free) { make(m, p); if (oppHasVcf(o, 12, 6000)) unsafe.add(m); unmake(m, p); }
+    const safeFree = free.filter(m => !unsafe.has(m));
+    let best = genMoves(p, 99, -1, 0).filter(m => !unsafe.has(m))[0];
+    if (best === undefined) best = genMoves(p, 99, -1, 0)[0];
+    let bestV = -Infinity, cands = [[best, 0]], ranked = [best];
     try {
       for (let depth = 1; depth <= 40; depth++) {
-        const order = genMoves(p, 99, best, 0);
+        let order = genMoves(p, 99, best, 0);
+        if (safeFree.length) order = order.filter(m => !unsafe.has(m));
         let cur = order[0], curV = -Infinity, alpha = -Infinity; const list = [];
         for (const m of order) {
           make(m, p);
@@ -786,30 +867,54 @@ const AI = (() => {
           if (v > alpha) alpha = v;
           list.push([m, v]);
         }
-        best = cur; bestV = curV; cands = list.filter(x => x[1] >= curV - margin);
+        best = cur; bestV = curV; cands = list.filter(x => x[1] >= curV - margin); ranked = list.slice().sort((x, y) => y[1] - x[1]).map(x => x[0]);
         if (Math.abs(bestV) >= WIN / 2 - 200 || depth >= empties) break;
       }
     } catch (e) { if (e !== STOP) throw e; }
     if (!free.includes(best)) best = free[0];
-    return { best, cands, v: bestV };
+    return { best, cands, v: bestV, ranked };
   }
-  function bestMove(st, who, ms, opts) {
-    opts = opts || {};
+  function afterMove(st, h, who) { // play h and settle any tile decisions with plain tiles
+    let s = MK.placeStone(st, h, who);
+    while (s.g.phase === 'tane') s = MK.resolveTane(s, s.g.turn, false);
+    return s;
+  }
+  function pick(st, who, ms, opts) {
     const varied = opts.varied !== false;
     const g = st.g, own = g.board.filter(x => x === who).length;
     const margin = !varied ? 0 : own < 2 ? 28 : own < 4 ? 9 : 2;
     noise = varied ? (own < 2 ? 40 : 4) : 0;
     const r = rootSearch(st, who, ms, margin);
     noise = 0;
-    if (!varied || Math.abs(r.v) >= WIN / 2 - 200 || r.cands.length < 2) return r.best;
-    // choose among (almost) equally good moves – the master shows different variants
-    const top = Math.max(...r.cands.map(c => c[1]));
-    const pool = r.cands.filter(c => c[1] > -WIN / 2 && c[1] >= top - margin);
-    if (pool.length < 2) return r.best;
-    const w = pool.map(c => Math.exp((c[1] - top) / Math.max(3, margin / 3)));
-    let x = Math.random() * w.reduce((s, v) => s + v, 0);
-    for (let i = 0; i < pool.length; i++) { x -= w[i]; if (x <= 0) return pool[i][0]; }
-    return pool[0][0];
+    let choice = r.best;
+    if (varied && Math.abs(r.v) < WIN / 2 - 200 && r.cands.length > 1) {
+      const top = Math.max(...r.cands.map(c => c[1]));
+      const pool = r.cands.filter(c => c[1] > -WIN / 2 && c[1] >= top - margin);
+      if (pool.length > 1) {
+        const w = pool.map(c => Math.exp((c[1] - top) / Math.max(3, margin / 3)));
+        let x = Math.random() * w.reduce((s, v) => s + v, 0);
+        for (let i = 0; i < pool.length; i++) { x -= w[i]; if (x <= 0) { choice = pool[i][0]; break; } }
+      }
+    }
+    return { r, choice };
+  }
+  function bestMove(st, who, ms, opts) {
+    opts = opts || {};
+    const { r, choice: first } = pick(st, who, ms * 0.55, opts);
+    if (r.v >= WIN / 2 - 200) return first;            // own forced win: just play it
+    // verify: does the opponent have a forced win after my move? then try the next best moves
+    const opp = who === 'B' ? 'W' : 'B', tried = new Set(), order = [first].concat((r.ranked || []).filter(m => m !== first));
+    const per = ms * 0.15;
+    let choice = first;
+    for (let k = 0; k < Math.min(4, order.length); k++) {
+      choice = order[k];
+      const s2 = afterMove(st, choice, who);
+      if (s2.g.phase !== 'play') return choice;          // game over (my win) or no reply possible
+      const o = rootSearch(s2, opp, per, 0);
+      if (o.v < WIN - 100) return choice;               // opponent has no forced win: safe
+      tried.add(choice);
+    }
+    return first;                                        // everything loses: keep the most stubborn move
   }
   // How soon could "who" force a win if it were his turn now? Returns number of his own moves, or 0.
   function threatIn(st, who, ms) {
@@ -1298,7 +1403,8 @@ function renderPractice() {
   else if (w && w.kind === 'win') msg = '<div class="pr-msg good">🌟 Du kannst jetzt gewinnen – finde den Zug!</div>';
   else if (w && w.kind === 'lost') msg = `<div class="pr-msg bad">💀 Die Stellung ist verloren: Der Meister gewinnt spätestens in ${w.n} ${w.n === 1 ? 'Zug' : 'Zügen'}. Nimm Züge zurück und probier es anders.</div>`;
   else if (w && w.kind === 'threat') msg = w.n === 1 ? '<div class="pr-msg bad">⚠️ Achtung! Der Meister gewinnt im nächsten Zug, wenn du nicht blockst.</div>'
-    : `<div class="pr-msg warn">⚠️ Vorsicht, Spielende in ${w.n} Zügen möglich. Der Meister baut eine Drohung auf – wähle deinen Zug sorgfältig.</div>`;
+    : w.n <= 6 ? `<div class="pr-msg warn">⚠️ Vorsicht, Spielende in ${w.n} Zügen möglich. Der Meister baut eine Drohung auf – wähle deinen Zug sorgfältig.</div>`
+    : '<div class="pr-msg warn">⚠️ Vorsicht: Der Meister baut eine längere Drohung auf – wähle deinen Zug sorgfältig.</div>';
   else if (w && w.kind === 'ok') msg = '<div class="pr-msg soft">✓ Keine unmittelbare Gefahr.</div>';
   el.innerHTML = msg + `<div class="row"><button class="btn" id="prHint" ${mine ? '' : 'disabled'}>💡 Besten Zug zeigen</button><button class="btn" id="prUndo" ${(app.hist || []).length ? '' : 'disabled'}>↶ Zurücknehmen</button></div>` +
     (app.hintText ? `<div class="pr-msg soft">${app.hintText}</div>` : '');
@@ -1326,7 +1432,7 @@ $('#practice').addEventListener('click', e => {
       try {
         app.hintText = '';
         if (g.phase === 'ball') { app.hint = AI.chooseBall(st); app.hintText = 'Tipp: Lege die Kugel in die markierte Mulde.'; }
-        else if (g.phase === 'play') { app.hint = AI.bestMove(st, app.me, 1500, { varied: false }); app.hintText = 'Tipp: Der markierte Platz ist der beste Zug.'; }
+        else if (g.phase === 'play') { app.hint = AI.bestMove(st, app.me, 2500, { varied: false }); app.hintText = 'Tipp: Der markierte Platz ist der beste Zug.'; }
         else if (g.phase === 'tane') { const c = AI.chooseTane(st, app.me); app.hint = null; if (c.use) { app.taneMode = true; app.taneDir = c.dir; app.hintText = 'Tipp: Setz den Tane in die vorgewählte Richtung.'; } else app.hintText = 'Tipp: Hier lieber das Plättchen legen.'; }
       } catch (err) { console.error(err); }
       render();
