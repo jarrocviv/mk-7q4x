@@ -170,6 +170,37 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
 .typing .dots i{display:inline-block;width:5px;height:5px;margin:0 1.5px;border-radius:50%;background:currentColor;animation:blink 1.2s infinite}
 .typing .dots i:nth-child(2){animation-delay:.2s}.typing .dots i:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.endfx{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:fxIn .45s ease-out both;cursor:pointer}
+.endfx.out{animation:fxOut .45s ease-in both}
+.endfx.win{background:radial-gradient(circle at 50% 45%,rgba(234,219,76,.35),rgba(27,39,71,.92) 60%)}
+.endfx.draw{background:radial-gradient(circle at 50% 45%,rgba(220,196,155,.3),rgba(27,39,71,.92) 60%)}
+.endfx.lose{background:linear-gradient(180deg,rgba(12,18,34,.75),rgba(8,12,24,.94))}
+.fx-box{position:relative;text-align:center;padding:0 24px}
+.fx-title{font-family:var(--serif);font-size:48px;font-weight:700;color:#FFF7DD;text-shadow:0 3px 18px rgba(0,0,0,.5);animation:fxPop .7s .25s cubic-bezier(.2,1.6,.4,1) both}
+.endfx.lose .fx-title{color:#C9D3E6;animation:fxSink 1.2s .3s ease-out both}
+.fx-sub{font-size:18px;color:#E8E1CF;margin-top:6px;animation:fxFade .8s .7s both}
+.fx-skip{font-size:13px;color:rgba(232,225,207,.6);margin-top:26px;animation:fxFade .6s 1.4s both}
+.fx-koru{width:170px;height:170px;display:block;margin:0 auto 8px}
+.fx-halo{fill:none;stroke:#EADB4C;stroke-width:1.5;opacity:.6;transform-origin:center;animation:fxHalo 1.6s ease-out infinite}
+.fx-spiral{fill:none;stroke:#EADB4C;stroke-width:4;stroke-linecap:round;stroke-dasharray:420;stroke-dashoffset:420;animation:fxDraw 1.5s .1s ease-out forwards}
+.fx-ball{fill:#6FA88A;stroke:#E9F5EC;stroke-width:1.5;animation:fxPop .6s .9s cubic-bezier(.2,1.6,.4,1) both}
+.fx-sea{position:fixed;left:-10%;width:120%;height:42vh;bottom:0;opacity:.95}
+.endfx.lose .fx-box{padding-bottom:22vh}
+.fx-wave{fill:#22406E;animation:fxWave 3s linear infinite}
+.fx-wave.w2{fill:#16305A;animation-duration:2.2s;animation-direction:reverse}
+.fx-stone{fill:#F2F1EC;animation:fxStone 2.6s .2s ease-in forwards}
+.fx-parts i{position:absolute;top:-24px;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,.35);animation-name:fxFall;animation-timing-function:cubic-bezier(.3,.1,.6,1);animation-fill-mode:both}
+@keyframes fxIn{from{opacity:0}to{opacity:1}}
+@keyframes fxOut{from{opacity:1}to{opacity:0}}
+@keyframes fxPop{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
+@keyframes fxFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fxSink{0%{opacity:0;transform:translateY(-30px)}100%{opacity:1;transform:none}}
+@keyframes fxDraw{to{stroke-dashoffset:0}}
+@keyframes fxHalo{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.25);opacity:0}}
+@keyframes fxWave{from{transform:translateX(0)}to{transform:translateX(-200px)}}
+@keyframes fxStone{0%{transform:translateY(0)}55%{transform:translateY(55px)}100%{transform:translateY(150px);opacity:.2}}
+@keyframes fxFall{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),110vh) rotate(360deg);opacity:.9}}
+@media (prefers-reduced-motion:reduce){.endfx *{animation:none!important}.fx-spiral{stroke-dashoffset:0}}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -195,7 +226,7 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 13</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 14</p>
   </div>
 </section>
 
@@ -996,6 +1027,7 @@ async function myId() {
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
   app.screen = id; window.scrollTo(0, 0);
+  app.prevPhase = undefined; endFxStop();
   if (id !== 'game') document.body.classList.remove('docked');
   if (typeof renderChat === 'function') setTimeout(renderChat, 0);
   if (id === 'home') refreshHome();
@@ -1328,13 +1360,17 @@ function render() {
     el.innerHTML = `<span class="dot ${p}"></span><span class="pl-t"><span class="nm">${nameOf(p)}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? `<i class="pres ${net.presence[p] ? 'on' : ''}" title="${net.presence[p] ? 'im Spiel' : 'nicht im Spiel'}"></i>` : ''}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? (net.presence[p] ? ', im Spiel' : ', abwesend') : ''}</span></span>`;
   });
   $('#gameInfo').textContent = `Partie ${st.gameNo}, ${{ meister: 'Meisterspiel', grund: 'Basisspiel', einsteiger: 'Einsteigerspiel' }[st.mode]}${st.mata ? ' mit Mata' : ''}` + (app.kind === 'online' ? `, Code ${net.code}, ${net.connected ? 'online' : 'offline'}` : '');
+  const overKey = app.kind + '-' + (app.kind === 'online' ? net.code : '') + '-' + st.gameNo + '-' + (g.result ? g.result.reason + g.moves : '');
+  if (g.phase === 'over' && app.prevPhase && app.prevPhase !== 'over' && app.fxDone !== overKey && app.fxKey !== overKey) startEndFx(overKey);
+  app.prevPhase = g.phase;
+  const fxOn = g.phase === 'over' && app.fxKey === overKey;
   const act = canAct();
   let preview = null;
   if (g.phase === 'tane' && app.taneMode && app.taneDir !== null) preview = { who: g.turn, a: g.queue[0].a, d: app.taneDir };
   $('#boardWrap').style.transform = boardTurned() ? 'rotate(180deg)' : '';
   const arrows = g.phase === 'tane' && act && app.taneMode ? { a: g.queue[0].a, sel: app.taneDir } : null;
   $('#board').innerHTML = boardSVG(st, { interactive: true, sel: act ? app.sel : null, selKind: g.phase === 'ball' ? 'O' : g.turn, ballHints: act && g.phase === 'ball', preview, arrows,
-    numbers: g.phase === 'over', flip: boardTurned(), hint: app.kind === 'bot' && app.practice && act ? app.hint : null });
+    numbers: g.phase === 'over' && !fxOn, flip: boardTurned(), hint: app.kind === 'bot' && app.practice && act ? app.hint : null });
 
   // status + actions
   let s = '', html = '', askHtml = '', askTop = false;
@@ -1365,6 +1401,8 @@ function render() {
       askHtml = ask; s = '';
       const [, ay] = AC(it.a); askTop = (boardTurned() ? -ay : ay) > 0;
     } else s = OPP() + ' hat ' + areaWord(it) + ' gewonnen und entscheidet über seinen Maori-Tane …';
+  } else if (g.phase === 'over' && fxOn) {
+    s = '';
   } else if (g.phase === 'over') {
     const r = g.result, w = r.winner;
     const reason = { tahuna: 'durch Tahuna – ein Strandfeld mit vier eigenen Steinen umschlossen.', ara: 'durch Ara – eine ganze Außenkante belegt.', awa: 'durch Awa – eine durchgehende Diagonale gelegt.', mata: 'durch Mata – den Moeraki-Kreis mit eigenen Steinen besetzt.', remis: 'Alle Mulden sind belegt und niemand hat vorzeitig gewonnen – im Einsteigerspiel endet die Partie unentschieden.',
@@ -1388,6 +1426,47 @@ function render() {
   renderPractice();
 }
 
+// ----- Animation am Spielende -----
+const REASON_SHORT = { tahuna: 'durch Tahuna', ara: 'durch Ara', awa: 'durch Awa', mata: 'durch Mata', marae: 'durch Marae', 'marae-gleich': 'bei Punktgleichstand', remis: '' };
+let fxTimer = null;
+function endFxStop() { clearTimeout(fxTimer); const el = document.getElementById('endFx'); if (el) el.remove(); }
+function startEndFx(key) {
+  const st = app.st, g = st.g, r = g.result, w = r.winner;
+  app.fxKey = key;
+  let kind, title, sub = REASON_SHORT[r.reason] || '';
+  if (!w) { kind = 'draw'; title = 'Unentschieden'; sub = 'Alle Mulden sind belegt.'; }
+  else if (app.kind === 'local') { kind = 'win'; title = (w === 'B' ? 'Schwarz' : 'Weiß') + ' gewinnt!'; }
+  else if (w === app.me) { kind = 'win'; title = 'Gewonnen!'; sub = 'Du gewinnst ' + sub; }
+  else { kind = 'lose'; title = 'Verloren'; sub = (app.kind === 'bot' ? 'Der Meister' : 'Dein Freund') + ' gewinnt ' + sub; }
+  if (st.matchWinner) sub += (kind === 'win' || app.kind === 'local' ? ' – und das ganze Moeraki-Kemu!' : ' – und damit das Moeraki-Kemu.');
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const el = document.createElement('div'); el.id = 'endFx'; el.className = 'endfx ' + kind; el.setAttribute('role', 'status');
+  let parts = '';
+  if (kind === 'win' && !reduce) {
+    const cols = ['#F7F3EA', '#151515', '#6FA88A', '#EADB4C', '#DCC49B'];
+    for (let i = 0; i < 46; i++) {
+      const c = cols[i % cols.length], x = Math.random() * 100, d = (Math.random() * 1.2).toFixed(2), t = (2.1 + Math.random() * 1.4).toFixed(2), s = (6 + Math.random() * 10).toFixed(1), dx = (Math.random() * 60 - 30).toFixed(0);
+      parts += `<i style="left:${x}%;width:${s}px;height:${s}px;background:${c};animation-delay:${d}s;animation-duration:${t}s;--dx:${dx}px"></i>`;
+    }
+  }
+  const art = kind === 'win'
+    ? `<svg class="fx-koru" viewBox="-60 -60 120 120" aria-hidden="true"><circle r="46" class="fx-halo"/><path class="fx-spiral" d="M0 0 m-6 0 a6 6 0 1 1 6 6 a12 12 0 1 1 12 -12 a20 20 0 1 1 -20 20 a30 30 0 1 1 30 -30"/><circle r="9" class="fx-ball"/></svg>`
+    : kind === 'lose'
+    ? `<svg class="fx-sea" viewBox="0 0 400 220" preserveAspectRatio="none" aria-hidden="true"><circle class="fx-stone" cx="200" cy="70" r="16"/><path class="fx-wave w1" d="M0 120 Q50 100 100 120 T200 120 T300 120 T400 120 T500 120 T600 120 V220 H0Z"/><path class="fx-wave w2" d="M0 140 Q50 122 100 140 T200 140 T300 140 T400 140 T500 140 T600 140 V220 H0Z"/></svg>`
+    : `<svg class="fx-koru" viewBox="-60 -60 120 120" aria-hidden="true"><circle r="46" class="fx-halo"/><circle r="9" class="fx-ball"/></svg>`;
+  el.innerHTML = `<div class="fx-parts">${parts}</div><div class="fx-box">${art}<div class="fx-title">${title}</div><div class="fx-sub">${sub}</div><div class="fx-skip">Tippen zum Fortfahren</div></div>`;
+  document.body.appendChild(el);
+  if (prefs.sound) (kind === 'lose' ? Sound.lose() : Sound.win());
+  if (prefs.vibrate && navigator.vibrate) navigator.vibrate(kind === 'lose' ? [250] : [60, 40, 60, 40, 220]);
+  const finish = () => {
+    if (app.fxKey !== key) return;
+    clearTimeout(fxTimer);
+    el.classList.add('out');
+    setTimeout(() => { el.remove(); app.fxKey = null; app.fxDone = key; render(); }, reduce ? 10 : 450);
+  };
+  el.addEventListener('click', finish);
+  fxTimer = setTimeout(finish, reduce ? 1600 : kind === 'lose' ? 3200 : 3600);
+}
 function renderPractice() {
   const el = $('#practice'); if (!el) return;
   const st = app.st, g = st && st.g;
@@ -1612,7 +1691,7 @@ const Sound = (() => {
   // Das klappt auf Android zuverlässiger als reines Web-Audio. Lautstärke = Medienlautstärke des Handys.
   const SR = 22050;
   function render(kind) {
-    const dur = kind === 'turn' ? 1.7 : kind === 'hello' ? 1.4 : 0.6, n = Math.floor(SR * dur), d = new Float32Array(n);
+    const dur = kind === 'turn' ? 1.7 : kind === 'hello' ? 1.4 : kind === 'win' ? 2.4 : kind === 'lose' ? 2.2 : 0.6, n = Math.floor(SR * dur), d = new Float32Array(n);
     const tone = (f, t0, len, vol, tri) => {
       const s0 = Math.floor(t0 * SR), L = Math.floor(len * SR);
       for (let i = 0; i < L && s0 + i < n; i++) {
@@ -1627,6 +1706,11 @@ const Sound = (() => {
       tone(165, 0, 0.12, 0.5, true);
       [[523.25, .14], [783.99, .30], [1046.5, .46]].forEach(([f, dt]) => { tone(f, dt, 0.75, 0.32); tone(f * 3.98, dt, 0.18, 0.05); });
       tone(783.99, .95, 0.6, 0.09);
+    } else if (kind === 'win') { // rising fanfare of wooden tones
+      [[523.25, 0], [659.25, .16], [783.99, .32], [1046.5, .5]].forEach(([f, dt]) => { tone(f, dt, 1.0, 0.24); tone(f * 2, dt, .4, 0.05); });
+      [523.25, 659.25, 783.99, 1046.5].forEach(f => tone(f, .9, 1.4, 0.13));
+    } else if (kind === 'lose') { // slow falling minor call
+      [[440, 0, 1.0], [349.23, .38, 1.0], [293.66, .8, 1.4]].forEach(([f, dt, l]) => { tone(f, dt, l, 0.24); tone(f / 2, dt, l, 0.1, true); });
     } else if (kind === 'hello') { // greeting: soft falling-rising wooden call
       [[659.25, 0, .5], [493.88, .16, .5], [739.99, .36, .9]].forEach(([f, dt, l]) => { tone(f, dt, l, 0.26); tone(f * 2.01, dt, l * .4, 0.05); });
     } else { tone(880, 0, 0.25, 0.3); tone(1318.5, 0.09, 0.35, 0.25); }
@@ -1639,7 +1723,7 @@ const Sound = (() => {
     for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, d[i] * g)) * 32767, true);
     return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
   }
-  const urls = { turn: render('turn'), chat: render('chat'), hello: render('hello') };
+  const urls = { turn: render('turn'), chat: render('chat'), hello: render('hello'), win: render('win'), lose: render('lose') };
   const els = {}; Object.keys(urls).forEach(k => { const a = new Audio(urls[k]); a.preload = 'auto'; els[k] = a; });
   let unlocked = false;
   function unlock() { // Android erlaubt Ton erst nach einer Berührung: dabei jeden Klang einmal stumm anspielen
@@ -1651,7 +1735,7 @@ const Sound = (() => {
     const a = els[k]; if (!a) return;
     try { a.muted = false; a.volume = 1; a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
   }
-  return { turn: () => play('turn'), chat: () => play('chat'), hello: () => play('hello'), test: () => { unlock(); play('turn'); }, get ready() { return unlocked; } };
+  return { turn: () => play('turn'), chat: () => play('chat'), hello: () => play('hello'), win: () => play('win'), lose: () => play('lose'), test: () => { unlock(); play('turn'); }, get ready() { return unlocked; } };
 })();
 async function sysNotify(body, tag) {
   if (!prefs.sys || !('Notification' in window) || Notification.permission !== 'granted') return;
