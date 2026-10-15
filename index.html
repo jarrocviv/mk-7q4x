@@ -68,6 +68,7 @@ label.f{display:block;margin-top:14px;font-weight:700}
 .pl{border-radius:14px;padding:8px 10px;border:1.5px solid var(--line);background:var(--panel);display:flex;gap:9px;align-items:center;min-width:0}
 .pl.turn{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .pl .dot{width:26px;height:26px;border-radius:50%;flex:0 0 auto}
+.pl .logo{width:34px;height:34px;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
 .dot.B{background:radial-gradient(circle at 35% 30%,#5b534d,#1c1917 70%)}
 .dot.W{background:radial-gradient(circle at 35% 30%,#fff,#d6ccb9 75%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
 .pl .nm{font-family:var(--serif);font-size:19px;line-height:1.1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -213,8 +214,24 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
 #rpRange{flex:1;min-width:0;accent-color:#EADB4C;height:34px}
 .rp-label{font-size:14px;margin:4px 2px 0}
 .rp-label .soft{font-size:12px}
-.rp-track{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden}
-.rp-fill{height:100%;background:#EADB4C;border-radius:3px;transition:width .12s ease-out}
+.rp-track{position:relative;flex:1;height:8px;margin:0 14px;border-radius:4px;background:rgba(255,255,255,.15)}
+.sheet.over{margin-top:8px;padding:10px 12px 12px}
+.sheet.over h3{font-size:18px;margin:0 0 2px;line-height:1.15}
+.ov-top{display:flex;gap:10px;align-items:center}
+.ov-t{flex:1;min-width:0}
+.ov-top .btn{width:auto;flex:0 0 auto;padding:12px 14px;margin:0;text-align:center}
+.sheet.over .soft{font-size:13px;margin:6px 0 0}
+.rp-enter{padding:8px 12px;font-size:15px;margin-top:6px}
+.sheet.over p{font-size:14px;line-height:1.35;margin:0 0 6px}
+.sheet.over .btn{padding:11px 12px;margin-top:4px}
+.replay{margin-top:8px}
+body.overdock #boardWrap{max-width:min(520px,max(230px,calc(100vh - 420px)));max-width:min(520px,max(200px,calc(100dvh - 420px)))}
+body.overdock-p #boardWrap{max-width:min(520px,max(230px,calc(100vh - 465px)));max-width:min(520px,max(200px,calc(100dvh - 465px)))}
+body.overdock .status{display:none}
+.rp-knob{position:absolute;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFBE6,#EADB4C 60%,#C9A800);box-shadow:0 2px 6px rgba(0,0,0,.45);touch-action:none;cursor:grab}
+.rp-knob.drag{transform:scale(1.15);cursor:grabbing}
+.rp-knob:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.rp-fill{position:absolute;left:0;top:0;height:100%;background:#EADB4C;border-radius:4px}
 .rp-enter{margin-top:8px;text-align:center}
 .rp-pop{animation:rpPop .25s ease-out}
 @keyframes rpPop{from{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(1.6)}to{opacity:1}}
@@ -244,7 +261,7 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 19</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 23</p>
   </div>
 </section>
 
@@ -1103,7 +1120,7 @@ const TRAY_PTS = (() => {
   for (let j = 0; j < 14; j++) for (let i = 0; i < 14; i++) {
     const x = 75 - r - i * dx - (j % 2 ? dx / 2 : 0), y = 75 - r - j * dy;
     const d = Math.hypot(x, y), ang = Math.atan2(y, x) * 180 / Math.PI;
-    if (d - r < 70.4 || ang < 18 || ang > 72 || x < 0 || y < 0) continue;
+    if (d - r < 70.4 || ang < 23 || ang > 67 || x < 0 || y < 0) continue;
     out.push([x, y, Math.hypot(76 - x, 76 - y)]);
   }
   return out.sort((a, b) => a[2] - b[2]).map(p => [p[0], p[1]]);
@@ -1111,7 +1128,7 @@ const TRAY_PTS = (() => {
 const VB = '-82 -82 164 164';
 
 function trayPath(sign) {
-  const a1 = 17, a2 = 73, e = 76.5;
+  const a1 = 22, a2 = 68, e = 76.5;
   const i1 = polar(69.5, a1), i2 = polar(69.5, a2);
   const o1 = [e, e * Math.tan(rad(a1))], o2 = [e / Math.tan(rad(a2)), e];
   const m = q => [q[0] * sign, q[1] * sign];
@@ -1124,12 +1141,13 @@ function bandPath(p) {
   return `M${f2(x1)} ${f2(y1)}A${BAND_R} ${BAND_R} 0 0 1 ${f2(x2)} ${f2(y2)}`;
 }
 // small line icons for the scale (own drawings): 3 Uira, 5 Kiwi, 7 Moa, 10 Ika Moana
-const ICONS = {
-  3: '<path d="M-.4 -2.6 L.9 -.5 L-.5 -.3 L.6 2.6 M-1.2 -1.9 C-1.6 -2.8 -.2 -3.2 .1 -2.4"/>',
-  5: '<path d="M-1.9 .6 C-2 -1.2 .4 -1.8 1.2 -.6 L2.6 1 M-.6 1.5 L-.8 2.4 M.3 1.5 L.4 2.4 M-1.9 .6 C-1.6 1.6 .4 1.8 1.1 .7"/>',
-  7: '<path d="M-1.6 .4 C-1.6 -.6 .2 -.8 .6 -.2 L.6 -2.2 L1.4 -2.4 M-1.6 .4 C-1.4 1.2 .3 1.3 .6 .5 M-.6 1 L-.7 2.6 M.1 1 L.3 2.6"/>',
-  10: '<path d="M-2.6 .2 C-2.4 -1.6 1.4 -1.8 2 .2 C2.2 1 1 1.4 -.6 1.2 C-1.6 1.1 -2.4 .9 -2.6 .2 M2 .2 L2.8 -.9 M2 .2 L2.9 .9"/>',
+const ICONS = { // filled silhouettes after the printed scale: 3 Uira (Blitz), 5 Kiwi, 7 Moa, 10 Ika Moana (Wal)
+  3: '<path d="M-1.9 -1.6 C-2.4 -3.1 -.3 -3.9 .4 -2.7 C.9 -3.5 2.4 -2.9 1.9 -1.7 C1.7 -1.2 1.1 -1 .5 -1.1" fill="none" stroke-width=".55"/><path d="M.5 -1.6 L-.9 .7 L.1 .7 L-.9 3.3 L1.5 -.3 L.4 -.3 L1.3 -1.6Z"/>',
+  5: '<path d="M-2.5 .5 C-2.7 -1.7 .5 -2.3 1.4 -.5 L3.5 1.3 L3.3 1.6 L1.3 .5 C1.1 1.5 .1 2.1 -.9 1.9 L-.8 2.9 L-1.2 2.9 L-1.4 1.8 C-2 1.6 -2.4 1.2 -2.5 .5Z"/>',
+  7: '<path d="M-1.8 .7 C-2.1 -.8 -.5 -1.6 .6 -1 L.7 -3.3 C.7 -3.9 1.7 -4 1.8 -3.3 L2.4 -3.2 L1.6 -2.9 L1.3 -.8 C1.7 .1 1.1 1.4 -.3 1.6 L-.1 3.4 L-.5 3.4 L-.8 1.6 L-1 3.4 L-1.4 3.4 L-1.3 1.5 C-1.6 1.3 -1.8 1 -1.8 .7Z"/>',
+  10: 'WHALE',
 };
+const WHALE = '<path d="M-.9 -6.2 C1.4 -6.4 2.5 -4.2 2.3 -1.7 C2.1 1.1 .9 3.1 -.3 4.6 L-1.8 5.6 L-1.2 4.8 L-2.6 4.9 L-1.1 4.1 C-1.8 2.5 -2.3 .2 -2.1 -2.1 C-2 -4.1 -2.2 -6 -.9 -6.2Z M-1.4 -1.6 C-.6 -1.3 .3 -1.3 1.1 -1.7" stroke-width=".35"/>';
 
 function hollow(p, x, y, r) {
   return `<circle cx="${f2(x)}" cy="${f2(y + .35)}" r="${f2(r + .25)}" fill="rgba(255,248,232,.55)"/>` +
@@ -1176,12 +1194,13 @@ function staticBoard(p) {
     const dark = pl === 'B' && typeof prefs !== 'undefined' && prefs.blackScale;
     o.push(`<path d="${bandPath(pl)}" fill="none" stroke="${dark ? '#161616' : '#FAFAF7'}" stroke-width="9.6" stroke-linecap="butt"/>`);
     for (let i = 0; i <= 10; i++) {
-      const [x, y] = scalePos(pl, i), r = i === 0 ? 4.1 : 3.55;
-      o.push(`<circle cx="${f2(x)}" cy="${f2(y)}" r="${r}" fill="url(#${p}ply)" stroke="#B9A07C" stroke-width=".35"/>`);
-      o.push(`<circle cx="${f2(x)}" cy="${f2(y)}" r="${f2(r - .7)}" fill="none" stroke="#FAFAF7" stroke-width=".6"/>`);
+      const [x, y] = scalePos(pl, i), r = ICONS[i] ? 4.25 : 3.45;
+      const band = dark ? '#161616' : '#FAFAF7', ink = dark ? '#9C9286' : '#B39876';
+      o.push(`<circle cx="${f2(x)}" cy="${f2(y)}" r="${r}" fill="${band}" stroke="${ink}" stroke-width=".45"/>`);
       if (ICONS[i]) {
-        const rot = scaleAngle(pl, i) - 90 + (pl === 'B' ? 0 : 0);
-        o.push(`<g transform="translate(${f2(x)} ${f2(y)}) rotate(${f2(rot)})" fill="none" stroke="#FAFAF7" stroke-width=".42" stroke-linecap="round" stroke-linejoin="round">${ICONS[i]}</g>`);
+        const rot = scaleAngle(pl, i) - 90;
+        if (i === 10) o.push(`<g transform="translate(${f2(x)} ${f2(y)}) rotate(${f2(rot)}) scale(.95)" fill="${band}" stroke="${ink}" stroke-width=".45" stroke-linejoin="round">${WHALE}</g>`);
+        else o.push(`<g transform="translate(${f2(x)} ${f2(y)}) rotate(${f2(rot)}) scale(.92)" fill="${ink}" stroke="${ink}" stroke-linecap="round" stroke-linejoin="round" stroke-width=".1">${ICONS[i]}</g>`);
       }
       if (i > 0 && i < 10) { // little breaks between the band segments
         const a = scaleAngle(pl, i) + 3.5, [x1, y1] = polar(BAND_R - 4.8, a), [x2, y2] = polar(BAND_R + 4.8, a);
@@ -1195,11 +1214,13 @@ function staticBoard(p) {
     const [cx, cy] = CAVE[pl];
     o.push(pl === 'B' ? `<circle cx="${cx}" cy="${cy}" r="5.6" fill="#141414"/><circle cx="${cx}" cy="${cy}" r="6.4" fill="none" stroke="#141414" stroke-width=".4"/>`
       : `<circle cx="${cx}" cy="${cy}" r="5.6" fill="#FAFAF7"/><circle cx="${cx}" cy="${cy}" r="6.4" fill="none" stroke="#FAFAF7" stroke-width=".4"/>`);
+    o.push(glyph(pl, cx, cy, 1.05));
   });
   // handwritten lettering on the left and right
-  const koru = '<path d="M0 0 m-1.6 0 a1.6 1.6 0 1 1 1.6 1.6 a1 1 0 1 1 1 -1 a.5 .5 0 1 0 -.5 .5" fill="none" stroke="#151515" stroke-width=".35"/>';
-  o.push(`<g transform="translate(-75 -9.5) rotate(-90)"><text font-family="'Dancing Script','Segoe Script',cursive" font-size="7.2" font-weight="600" fill="#151515" text-anchor="middle">Moeraki</text><g transform="translate(-16.5 -2.8)">${koru}</g></g>`);
-  o.push(`<g transform="translate(75 9.5) rotate(90)"><text font-family="'Dancing Script','Segoe Script',cursive" font-size="7.2" font-weight="600" fill="#151515" text-anchor="middle">Kemu</text></g>`);
+  const koru = '<circle r="1.9" fill="#151515"/><path d="M0 0 m-1.1 0 a1.1 1.1 0 1 1 1.1 1.1 a.65 .65 0 1 1 .65 -.65" fill="none" stroke="#D8C19B" stroke-width=".38"/><path d="M1.6 1 C2.6 2.4 2.8 4 2.4 5.2" fill="none" stroke="#151515" stroke-width=".55" stroke-linecap="round"/>';
+  const FONT = "'Dancing Script','Segoe Script','Brush Script MT',cursive";
+  o.push(`<g transform="translate(-75.2 -6.5) rotate(90)"><text font-family="${FONT}" font-size="6.4" font-weight="600" fill="#151515" text-anchor="middle" textLength="20" lengthAdjust="spacingAndGlyphs">Moeraki</text><g transform="translate(-13 -3.4)">${koru}</g></g>`);
+  o.push(`<g transform="translate(75.2 6.5) rotate(-90)"><text font-family="${FONT}" font-size="6.4" font-weight="600" fill="#151515" text-anchor="middle" textLength="13" lengthAdjust="spacingAndGlyphs">Kemu</text></g>`);
   // grid lines
   const segs = MK.LINES.map(L => [P(L[0]), P(L[L.length - 1])]);
   MK.EDGES.forEach(E => segs.push([P(E[0]), P(E[E.length - 1])]));
@@ -1222,11 +1243,22 @@ function pieceDefs(p) {
 </defs>`;
 }
 function glyph(o, x, y, sc) {
-  // Schwarz (Matau): weißer Haken; Weiß (Manaia): schwarze S-Spirale – beide mit der Teilungslinie
+  // Matau (Schwarz): weißer Angelhaken mit Vogelkopf · Manaia (Weiß): schwarzes S mit großer Spirale
   const body = o === 'B'
-    ? '<g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round"><path d="M.5 -3.3 C1.9 -2.6 1.9 -1 .7 -.5 C-.3 -.1 -.3 1.2 .3 2.2 C.9 3.2 -.6 3.9 -1.6 3 C-2.3 2.3 -2 1.2 -1.2 1.1" stroke-width=".85"/><path d="M.5 -3.3 C-.6 -3.2 -1.2 -2.2 -.6 -1.6" stroke-width=".6"/><circle cx="1" cy="-2.3" r=".35" fill="#FFFFFF" stroke="none"/></g>'
-    : '<g fill="none" stroke="#141414" stroke-linecap="round"><path d="M1.9 -1.6 C2 -3.3 -1.9 -3.4 -1.9 -1.5 C-1.9 0 1.9 -.1 1.9 1.5 C1.9 3.3 -1.9 3.3 -1.9 1.6" stroke-width=".85"/><circle cx="1.75" cy="-1.35" r=".55" fill="#141414" stroke="none"/><circle cx="-1.75" cy="1.4" r=".55" fill="#141414" stroke="none"/></g>';
+    ? '<g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M.7 -3.5 C-1.7 -2.8 -2.5 .2 -1.5 2 C-.5 3.6 1.6 3.2 1.9 1.4 C2.1 .1 1.7 -1.2 1.2 -2.1" stroke-width="1.05"/>' +
+      '<path d="M.7 -3.5 L-.5 -3.2 M1.2 -2.1 L1.9 -2.5" stroke-width=".7"/>' +
+      '<path d="M-.5 1.5 C-.3 .6 .8 .6 .7 1.6 C.6 2.2 -.1 2.2 -.1 1.7" stroke-width=".55"/>' +
+      '<circle cx=".35" cy="-2.75" r=".33" fill="#FFFFFF" stroke="none"/></g>'
+    : '<g fill="none" stroke="#141414" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M1.7 .1 C2.6 2.2 1.2 3.9 -.6 3.5 C-2.3 3.1 -2.7 1.2 -1.5 .4 C-.5 -.2 .8 .6 .4 1.6 C.1 2.2 -.8 2.1 -.8 1.4" stroke-width="1.15"/>' +
+      '<path d="M1.7 .1 C1.1 -1 -1.5 -.7 -1.5 -2.3 C-1.5 -3.7 .8 -3.9 1.4 -2.8" stroke-width="1.05"/>' +
+      '<circle cx="2" cy="-1.7" r=".48" fill="#141414" stroke="none"/><circle cx="2.2" cy="-.8" r=".42" fill="#141414" stroke="none"/>' +
+      '<circle cx=".2" cy="-2.6" r=".38" fill="#141414" stroke="none"/></g>';
   return `<g transform="translate(${f2(x)} ${f2(y)}) scale(${sc})">${body}</g>`;
+}
+function logoBadge(o) { // round tribe badge for the player cards
+  return `<svg class="logo" viewBox="-6 -6 12 12" aria-hidden="true"><circle r="5.7" fill="${o === 'B' ? '#151515' : '#F7F5EF'}" stroke="${o === 'B' ? '#000' : '#B7B2A6'}" stroke-width=".3"/>${glyph(o, 0, .1, 1.05)}</svg>`;
 }
 // c: polygon corners; axis 'v'|'h' for the dividing line; caps: indices of corners that get stripes
 function tileBody(p, o, c, axis, caps) {
@@ -1237,8 +1269,7 @@ function tileBody(p, o, c, axis, caps) {
     if (i >= n) return;
     const V = c[i], A = c[(i + n - 1) % n], B = c[(i + 1) % n];
     const at = (t, Q) => [V[0] + t * (Q[0] - V[0]), V[1] + t * (Q[1] - V[1])];
-    s += `<polygon points="${pts([V, at(.2, A), at(.2, B)])}" fill="${inv}"/>`;
-    s += `<polygon points="${pts([at(.29, A), at(.29, B), at(.39, B), at(.39, A)])}" fill="${inv}"/>`;
+    s += `<polygon points="${pts([V, at(.3, A), at(.3, B)])}" fill="${inv}"/>`;
   });
   if (axis) {
     const cx = c.reduce((a, q) => a + q[0], 0) / n, cy = c.reduce((a, q) => a + q[1], 0) / n;
@@ -1275,7 +1306,7 @@ function stone(p, x, y, kind, op, r0) {
     `<ellipse cx="${f2(x - r * .32)}" cy="${f2(y - r * .42)}" rx="${f2(r * .3)}" ry="${f2(r * .18)}" fill="#fff" opacity="${kind === 'B' ? .4 : .65}" transform="rotate(-30 ${f2(x - r * .32)} ${f2(y - r * .42)})"/></g>`;
 }
 function taneFig(p, x, y, d, o) { // clay figure seen from above; the hole shows its line of sight
-  const [dx, dy0] = d === null ? [0, -1] : MK.DIRS[d], n = Math.hypot(dx, dy0), ux = dx / n, uy = -dy0 / n;
+  const [dx, dy0] = d === null ? (o === 'B' ? [1, 1] : [-1, -1]) : MK.DIRS[d], n = Math.hypot(dx, dy0), ux = dx / n, uy = -dy0 / n;
   return `<ellipse cx="${f2(x + .7)}" cy="${f2(y + 1.1)}" rx="5" ry="4.6" fill="rgba(30,20,8,.4)"/>` +
     `<circle cx="${f2(x)}" cy="${f2(y)}" r="5" fill="url(#${p}C${o})"/>` +
     `<circle cx="${f2(x - 1)}" cy="${f2(y - 1.2)}" r="2.6" fill="#fff" opacity="${o === 'B' ? .12 : .35}"/>` +
@@ -1387,7 +1418,7 @@ function render() {
   ['B', 'W'].forEach(p => {
     const el = $('#pl' + p);
     el.classList.toggle('turn', g.turn === p);
-    el.innerHTML = `<span class="dot ${p}"></span><span class="pl-t"><span class="nm">${nameOf(p)}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? `<i class="pres ${net.presence[p] ? 'on' : ''}" title="${net.presence[p] ? 'im Spiel' : 'nicht im Spiel'}"></i>` : ''}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? (net.presence[p] ? ', im Spiel' : ', abwesend') : ''}</span></span>`;
+    el.innerHTML = `${logoBadge(p)}<span class="pl-t"><span class="nm">${nameOf(p)}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? `<i class="pres ${net.presence[p] ? 'on' : ''}" title="${net.presence[p] ? 'im Spiel' : 'nicht im Spiel'}"></i>` : ''}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? (net.presence[p] ? ', im Spiel' : ', abwesend') : ''}</span></span>`;
   });
   $('#gameInfo').textContent = `Partie ${st.gameNo}, ${{ meister: 'Meisterspiel', grund: 'Basisspiel', einsteiger: 'Einsteigerspiel' }[st.mode]}${st.mata ? ' mit Mata' : ''}` + (app.kind === 'online' ? `, Code ${net.code}, ${net.connected ? 'online' : 'offline'}` : '');
   const overKey = app.kind + '-' + (app.kind === 'online' ? net.code : '') + '-' + st.gameNo + '-' + (g.result ? g.result.reason + g.moves : '');
@@ -1409,8 +1440,8 @@ function render() {
       if (k < N) view = R[k];
       const who = k === 0 ? '' : (R[k].g.board[R[k].g.last] === 'B' ? 'Schwarz' : 'Weiß');
       const label = k === N ? `Endstand nach ${N} Zügen` : k === 0 ? 'Start: Kugel gelegt' : `Zug ${k} von ${N} (${app.kind === 'local' ? who : (R[k].g.board[R[k].g.last] === app.me ? 'du' : (app.kind === 'bot' ? 'der Meister' : 'dein Freund'))})`;
-      rpHtml = `<div class="replay"><div class="rp-row"><button class="rp-btn" id="rpPrev" aria-label="Zug zurück" ${k === 0 ? 'disabled' : ''}>◀</button><div class="rp-track"><div class="rp-fill" id="rpFill" style="width:${(k / N * 100).toFixed(1)}%"></div></div><button class="rp-btn" id="rpNext" aria-label="Zug vor" ${k === N ? 'disabled' : ''}>▶</button></div><div class="rp-label"><span id="rpText">${label}</span><span class="soft"> – zum Nachspielen über das Brett wischen</span></div>` +
-        (app.kind === 'bot' && app.practice ? `<button class="btn primary rp-enter" id="rpEnter" ${k === N ? 'disabled' : ''}>▶ Hier einsteigen und weiterspielen</button>` : '') + `</div>`;
+      rpHtml = `<div class="replay"><div class="rp-row"><button class="rp-btn" id="rpPrev" aria-label="Zug zurück" ${k === 0 ? 'disabled' : ''}>◀</button><div class="rp-track" id="rpTrack"><div class="rp-fill" id="rpFill" style="width:${(k / N * 100).toFixed(1)}%"></div><div class="rp-knob" id="rpKnob" role="slider" tabindex="0" aria-label="Spielverlauf" aria-valuemin="0" aria-valuemax="${N}" aria-valuenow="${k}" style="left:${(k / N * 100).toFixed(1)}%"></div></div><button class="rp-btn" id="rpNext" aria-label="Zug vor" ${k === N ? 'disabled' : ''}>▶</button></div><div class="rp-label"><span id="rpText">${label}</span></div>` +
+        (app.kind === 'bot' && app.practice ? `<button class="btn rp-enter" id="rpEnter" ${k === N ? 'disabled' : ''}>▶ Hier einsteigen</button>` : '') + `</div>`;
     }
   }
   $('#board').innerHTML = boardSVG(view, { interactive: true, sel: act ? app.sel : null, selKind: g.phase === 'ball' ? 'O' : g.turn, ballHints: act && g.phase === 'ball', preview, arrows,
@@ -1459,19 +1490,21 @@ function render() {
       marae: `nach Punkten, ${fmt(r.score.B)} zu ${fmt(r.score.W)} (Schwarz zu Weiß).`, 'marae-gleich': `bei Punktgleichstand (${fmt(r.score.B)} zu ${fmt(r.score.W)}) – wer die Kugel gelegt hat, gewinnt.` }[r.reason];
     const title = !w ? 'Unentschieden' : app.kind !== 'local' ? (w === app.me ? 'Du gewinnst diese Partie' : OPP() + ' gewinnt diese Partie') : nameOf(w) + ' gewinnt diese Partie';
     s = '';
-    html = `<div class="sheet over"><h3>${title}</h3><p>${reason}</p>`;
+    const next = w || MK.other(g.ballPlacer), nextName = app.kind !== 'local' ? (next === app.me ? 'du' : opp()) : nameOf(next);
     if (st.matchWinner) {
       const mt = app.kind !== 'local' ? (st.matchWinner === app.me ? 'Damit hast du das Moeraki-Kemu gewonnen!' : 'Damit hat ' + opp() + ' das Moeraki-Kemu gewonnen.') : nameOf(st.matchWinner) + ' gewinnt das Moeraki-Kemu!';
-      html += `<p><b>${mt}</b> Endstand ${st.wins.B} zu ${st.wins.W}.</p><button class="btn primary" id="newMatch">Neues Match starten</button>`;
+      html = `<div class="sheet over"><div class="ov-top"><div class="ov-t"><h3>${title}</h3><p>${reason}</p></div><button class="btn primary" id="newMatch">Neues Match</button></div><p class="soft"><b>${mt}</b> Endstand ${st.wins.B} zu ${st.wins.W}.</p></div>`;
     } else {
-      html += `<p class="soft">Stand: Schwarz ${st.wins.B}, Weiß ${st.wins.W} – gespielt wird auf ${st.target} Siege. In der nächsten Partie legt ${(q => app.kind !== 'local' ? (q === app.me ? 'du' : opp()) : nameOf(q))(w || MK.other(g.ballPlacer))} die Kugel.</p><button class="btn primary" id="nextGame">Nächste Partie</button>`;
+      html = `<div class="sheet over"><div class="ov-top"><div class="ov-t"><h3>${title}</h3><p>${reason}</p></div><button class="btn primary" id="nextGame">Nächste Partie</button></div><p class="soft">Stand ${st.wins.B} zu ${st.wins.W} (Schwarz zu Weiß), gespielt wird auf ${st.target} Siege. Die Kugel legt ${nextName}.</p></div>`;
     }
-    html += `</div>`;
   }
   $('#status').textContent = s;
   const slim = html.indexOf('dock slim') >= 0;
-  $('#underBoard').innerHTML = slim ? html : rpHtml;
-  $('#actions').innerHTML = slim ? '' : html;
+  const overInline = g.phase === 'over' && !fxOn;
+  $('#underBoard').innerHTML = slim ? html : rpHtml + (overInline ? html : '');
+  $('#actions').innerHTML = slim || overInline ? '' : html;
+  document.body.classList.toggle('overdock', overInline);
+  document.body.classList.toggle('overdock-p', overInline && app.kind === 'bot' && !!app.practice);
   const ask = $('#ask'); ask.innerHTML = askHtml; ask.hidden = !askHtml; ask.classList.toggle('at-top', askTop);
   document.body.classList.toggle('docked', !slim && html.indexOf('sheet dock') >= 0);
   document.body.classList.toggle('slimdock', slim);
@@ -1506,14 +1539,14 @@ function replayLabel(k) {
   const who = app.kind === 'local' ? (c === 'B' ? 'Schwarz' : 'Weiß') : c === app.me ? 'du' : (app.kind === 'bot' ? 'der Meister' : 'dein Freund');
   return `Zug ${k} von ${N} (${who})`;
 }
-let rpFrame = 0;
+let rpFrame = 0, rpDrag = false;
 function drawReplay() { // only the board and the little bar – no full re-render, so swiping stays smooth
   rpFrame = 0;
   const R = app.rpStates; if (!R) return;
   const N = R.length - 1, k = app.replay === null || app.replay === undefined ? N : app.replay, view = k === N ? app.st : R[k];
   $('#board').innerHTML = boardSVG(view, { interactive: true, numbers: true, flip: boardTurned(), replayLast: view !== app.st ? view.g.last : null });
   const f = $('#rpFill'), t = $('#rpText'), pv = $('#rpPrev'), nx = $('#rpNext'), en = $('#rpEnter');
-  if (f) f.style.width = (k / N * 100).toFixed(1) + '%';
+  if (!rpDrag) { if (f) f.style.width = (k / N * 100).toFixed(1) + '%'; const kn = $('#rpKnob'); if (kn) { kn.style.left = (k / N * 100).toFixed(1) + '%'; kn.setAttribute('aria-valuenow', k); } }
   if (t) t.textContent = replayLabel(k);
   if (pv) pv.disabled = k === 0; if (nx) nx.disabled = k === N; if (en) en.disabled = k === N;
 }
@@ -2058,6 +2091,24 @@ $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); })
   const ub = document.createElement('div'); ub.id = 'underBoard'; host.parentNode.insertBefore(ub, host.nextSibling); ub.addEventListener('click', onAction);
   ub.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const N = app.rpStates ? app.rpStates.length - 1 : 0, k = app.replay === null || app.replay === undefined ? N : app.replay;
     if (b.id === 'rpPrev') setReplay(k - 1); else if (b.id === 'rpNext') setReplay(k + 1); else if (b.id === 'rpEnter') enterHere(); });
+  // draggable knob under the board
+  ub.addEventListener('pointerdown', e => {
+    const kn = e.target.closest('#rpKnob'); if (!kn || !app.rpStates) return;
+    e.preventDefault(); try { kn.setPointerCapture(e.pointerId); } catch (err) {} rpDrag = true; kn.classList.add('drag');
+    const track = $('#rpTrack'), N = app.rpStates.length - 1;
+    const move = ev => {
+      const r = track.getBoundingClientRect(), fr = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+      kn.style.left = (fr * 100) + '%'; $('#rpFill').style.width = (fr * 100) + '%';
+      setReplay(Math.round(fr * N));
+    };
+    const up = () => { rpDrag = false; kn.classList.remove('drag'); kn.removeEventListener('pointermove', move); kn.removeEventListener('pointerup', up); kn.removeEventListener('pointercancel', up); if (!rpFrame) rpFrame = requestAnimationFrame(drawReplay); };
+    kn.addEventListener('pointermove', move); kn.addEventListener('pointerup', up); kn.addEventListener('pointercancel', up);
+  });
+  ub.addEventListener('keydown', e => {
+    if (!e.target.closest('#rpKnob') || !app.rpStates) return;
+    const N = app.rpStates.length - 1, k = app.replay === null || app.replay === undefined ? N : app.replay;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); setReplay(k - 1); } else if (e.key === 'ArrowRight') { e.preventDefault(); setReplay(k + 1); }
+  });
   // swipe over the board: left = back, right = forward
   let sx = null, sk = 0, sy = 0, swiping = false;
   wrap.addEventListener('touchstart', e => { if (!app.st || app.st.g.phase !== 'over' || !app.rpStates || app.fxKey) return; const t = e.touches[0]; sx = t.clientX; sy = t.clientY; swiping = false; const N = app.rpStates.length - 1; sk = app.replay === null || app.replay === undefined ? N : app.replay; }, { passive: true });
