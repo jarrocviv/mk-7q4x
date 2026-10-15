@@ -217,6 +217,9 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
 .rp-track{position:relative;flex:1;height:8px;margin:0 14px;border-radius:4px;background:rgba(255,255,255,.15)}
 .sheet.over{margin-top:8px;padding:10px 12px 12px}
 .sheet.over h3{font-size:18px;margin:0 0 2px;line-height:1.15}
+.ov-next{margin:0 0 8px!important;text-align:center;font-size:17px}
+.ov-next:disabled{opacity:.75}
+.ov-wait{font-size:13px!important;color:var(--ink-soft);margin:-2px 2px 8px!important}
 .ov-top{display:flex;gap:10px;align-items:center}
 .ov-t{flex:1;min-width:0}
 .ov-top .btn{width:auto;flex:0 0 auto;padding:12px 14px;margin:0;text-align:center}
@@ -261,7 +264,7 @@ body.overdock .status{display:none}
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 23</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 24</p>
   </div>
 </section>
 
@@ -1490,12 +1493,18 @@ function render() {
       marae: `nach Punkten, ${fmt(r.score.B)} zu ${fmt(r.score.W)} (Schwarz zu Weiß).`, 'marae-gleich': `bei Punktgleichstand (${fmt(r.score.B)} zu ${fmt(r.score.W)}) – wer die Kugel gelegt hat, gewinnt.` }[r.reason];
     const title = !w ? 'Unentschieden' : app.kind !== 'local' ? (w === app.me ? 'Du gewinnst diese Partie' : OPP() + ' gewinnt diese Partie') : nameOf(w) + ' gewinnt diese Partie';
     s = '';
+    const nextBtn = (id, label) => {
+      if (app.kind !== 'online') return `<button class="btn primary ov-next" id="${id}">${label}</button>`;
+      const rd = st.ready || {}, mineR = !!rd[app.me], theirs = !!rd[MK.other(app.me)];
+      if (mineR) return `<button class="btn primary ov-next" disabled>Bereit – warte auf deinen Freund …</button><p class="ov-wait">Sobald dein Freund auch bereit ist, wird das Brett für die nächste Partie aufgeräumt.</p>`;
+      return `<button class="btn primary ov-next" id="${id}">${label}</button>` + (theirs ? '<p class="ov-wait">✓ Dein Freund ist schon bereit.</p>' : '<p class="ov-wait">Es geht erst weiter, wenn ihr beide bereit seid. Bis dahin könnt ihr die Partie in Ruhe nachspielen.</p>');
+    };
     const next = w || MK.other(g.ballPlacer), nextName = app.kind !== 'local' ? (next === app.me ? 'du' : opp()) : nameOf(next);
     if (st.matchWinner) {
       const mt = app.kind !== 'local' ? (st.matchWinner === app.me ? 'Damit hast du das Moeraki-Kemu gewonnen!' : 'Damit hat ' + opp() + ' das Moeraki-Kemu gewonnen.') : nameOf(st.matchWinner) + ' gewinnt das Moeraki-Kemu!';
-      html = `<div class="sheet over"><div class="ov-top"><div class="ov-t"><h3>${title}</h3><p>${reason}</p></div><button class="btn primary" id="newMatch">Neues Match</button></div><p class="soft"><b>${mt}</b> Endstand ${st.wins.B} zu ${st.wins.W}.</p></div>`;
+      html = `<div class="sheet over">${nextBtn('newMatch', 'Neues Match starten')}<h3>${title}</h3><p>${reason}</p><p class="soft"><b>${mt}</b> Endstand ${st.wins.B} zu ${st.wins.W}.</p></div>`;
     } else {
-      html = `<div class="sheet over"><div class="ov-top"><div class="ov-t"><h3>${title}</h3><p>${reason}</p></div><button class="btn primary" id="nextGame">Nächste Partie</button></div><p class="soft">Stand ${st.wins.B} zu ${st.wins.W} (Schwarz zu Weiß), gespielt wird auf ${st.target} Siege. Die Kugel legt ${nextName}.</p></div>`;
+      html = `<div class="sheet over">${nextBtn('nextGame', 'Nächste Partie')}<h3>${title}</h3><p>${reason}</p><p class="soft">Stand ${st.wins.B} zu ${st.wins.W} (Schwarz zu Weiß), gespielt wird auf ${st.target} Siege. Die Kugel legt ${nextName}.</p></div>`;
     }
   }
   $('#status').textContent = s;
@@ -1697,8 +1706,15 @@ function onAction(e) {
   else if (b.id === 'tBack') { app.taneMode = false; app.taneDir = null; render(); }
   else if (b.dataset.dir !== undefined) { app.taneDir = +b.dataset.dir; render(); }
   else if (b.id === 'tGo') attempt(() => MK.resolveTane(st, g.turn, true, app.taneDir));
-  else if (b.id === 'nextGame') attempt(() => MK.nextGame(st));
-  else if (b.id === 'newMatch') attempt(() => MK.newMatchSame(st));
+  else if (b.id === 'nextGame' || b.id === 'newMatch') {
+    const go = s0 => { const ns = b.id === 'nextGame' ? MK.nextGame(s0) : MK.newMatchSame(s0); ns.ready = {}; return ns; };
+    if (app.kind !== 'online') attempt(() => go(st));
+    else {
+      const rd = Object.assign({}, st.ready || {});
+      if (rd[MK.other(app.me)]) attempt(() => go(st));        // friend is ready too: clear the board
+      else { rd[app.me] = true; const ns = JSON.parse(JSON.stringify(st)); ns.ready = rd; commit(ns); }
+    }
+  }
 }
 $('#actions').addEventListener('click', onAction);
 $('#ask').addEventListener('click', onAction);
@@ -1799,6 +1815,14 @@ function onDoc(d) {
     const r = d.rev || 0, mine = cur.rev || 0;
     if (r < mine) { publish(); return; }                         // broker has an older state: heal it
     if (r === mine) {                                             // same move: merge the player slots only
+      const cr = (cur.state && cur.state.ready) || {}, dr = (d.state && d.state.ready) || {};
+      if ((dr.B && !cr.B) || (dr.W && !cr.W)) {                    // both pressed "next" at the same moment
+        const merged = { B: !!(cr.B || dr.B), W: !!(cr.W || dr.W) };
+        let ns = JSON.parse(JSON.stringify(cur.state)); ns.ready = merged;
+        if (merged.B && merged.W && ns.g.phase === 'over') { ns = ns.matchWinner ? MK.newMatchSame(ns) : MK.nextGame(ns); ns.ready = {}; }
+        net.doc = Object.assign({}, cur, { state: ns, rev: mine + 1 }); app.st = ns; app.rev = mine + 1; app.phaseKey = '';
+        publish(); saveOnline(); render(); return;
+      }
       const pl = { B: cur.players.B || d.players.B || null, W: cur.players.W || d.players.W || null };
       if (pl.B === cur.players.B && pl.W === cur.players.W) return;
       const incomingLacks = pl.B !== d.players.B || pl.W !== d.players.W;
