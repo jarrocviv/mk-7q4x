@@ -213,6 +213,8 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
 #rpRange{flex:1;min-width:0;accent-color:#EADB4C;height:34px}
 .rp-label{font-size:14px;margin:4px 2px 0}
 .rp-label .soft{font-size:12px}
+.rp-track{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden}
+.rp-fill{height:100%;background:#EADB4C;border-radius:3px;transition:width .12s ease-out}
 .rp-enter{margin-top:8px;text-align:center}
 .rp-pop{animation:rpPop .25s ease-out}
 @keyframes rpPop{from{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(1.6)}to{opacity:1}}
@@ -242,7 +244,7 @@ body.docked #boardWrap{max-width:min(520px,max(250px,calc(100vh - 380px)));max-w
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 18</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 19</p>
   </div>
 </section>
 
@@ -1407,7 +1409,7 @@ function render() {
       if (k < N) view = R[k];
       const who = k === 0 ? '' : (R[k].g.board[R[k].g.last] === 'B' ? 'Schwarz' : 'Weiß');
       const label = k === N ? `Endstand nach ${N} Zügen` : k === 0 ? 'Start: Kugel gelegt' : `Zug ${k} von ${N} (${app.kind === 'local' ? who : (R[k].g.board[R[k].g.last] === app.me ? 'du' : (app.kind === 'bot' ? 'der Meister' : 'dein Freund'))})`;
-      rpHtml = `<div class="replay"><div class="rp-row"><button class="rp-btn" id="rpPrev" aria-label="Zug zurück" ${k === 0 ? 'disabled' : ''}>◀</button><input type="range" id="rpRange" min="0" max="${N}" value="${k}" aria-label="Spielverlauf"><button class="rp-btn" id="rpNext" aria-label="Zug vor" ${k === N ? 'disabled' : ''}>▶</button></div><div class="rp-label">${label}<span class="soft"> – wische über das Brett oder den Regler</span></div>` +
+      rpHtml = `<div class="replay"><div class="rp-row"><button class="rp-btn" id="rpPrev" aria-label="Zug zurück" ${k === 0 ? 'disabled' : ''}>◀</button><div class="rp-track"><div class="rp-fill" id="rpFill" style="width:${(k / N * 100).toFixed(1)}%"></div></div><button class="rp-btn" id="rpNext" aria-label="Zug vor" ${k === N ? 'disabled' : ''}>▶</button></div><div class="rp-label"><span id="rpText">${label}</span><span class="soft"> – zum Nachspielen über das Brett wischen</span></div>` +
         (app.kind === 'bot' && app.practice ? `<button class="btn primary rp-enter" id="rpEnter" ${k === N ? 'disabled' : ''}>▶ Hier einsteigen und weiterspielen</button>` : '') + `</div>`;
     }
   }
@@ -1496,14 +1498,33 @@ function buildReplay(st) {
     return out;
   } catch (err) { console.error(err); return null; }
 }
+function replayLabel(k) {
+  const R = app.rpStates, N = R.length - 1;
+  if (k === N) return `Endstand nach ${N} Zügen`;
+  if (k === 0) return 'Start: Kugel gelegt';
+  const g = R[k].g, c = g.board[g.last];
+  const who = app.kind === 'local' ? (c === 'B' ? 'Schwarz' : 'Weiß') : c === app.me ? 'du' : (app.kind === 'bot' ? 'der Meister' : 'dein Freund');
+  return `Zug ${k} von ${N} (${who})`;
+}
+let rpFrame = 0;
+function drawReplay() { // only the board and the little bar – no full re-render, so swiping stays smooth
+  rpFrame = 0;
+  const R = app.rpStates; if (!R) return;
+  const N = R.length - 1, k = app.replay === null || app.replay === undefined ? N : app.replay, view = k === N ? app.st : R[k];
+  $('#board').innerHTML = boardSVG(view, { interactive: true, numbers: true, flip: boardTurned(), replayLast: view !== app.st ? view.g.last : null });
+  const f = $('#rpFill'), t = $('#rpText'), pv = $('#rpPrev'), nx = $('#rpNext'), en = $('#rpEnter');
+  if (f) f.style.width = (k / N * 100).toFixed(1) + '%';
+  if (t) t.textContent = replayLabel(k);
+  if (pv) pv.disabled = k === 0; if (nx) nx.disabled = k === N; if (en) en.disabled = k === N;
+}
 function setReplay(k) {
   const R = app.rpStates; if (!R) return;
   const N = R.length - 1; k = Math.max(0, Math.min(N, k));
   const cur = app.replay === null || app.replay === undefined ? N : app.replay;
   if (k === cur) return;
   app.replay = k === N ? null : k;
-  if (prefs.vibrate && navigator.vibrate) navigator.vibrate(9);
-  render();
+  if (prefs.vibrate && navigator.vibrate) navigator.vibrate(8);
+  if (!rpFrame) rpFrame = requestAnimationFrame(drawReplay);
 }
 function enterHere() {
   const R = app.rpStates, k = app.replay; if (!R || k === null || k === undefined) return;
@@ -1618,6 +1639,7 @@ function attempt(fn) {
   catch (e) { toast(e.message || 'Das geht gerade nicht.'); }
 }
 $('#board').addEventListener('click', e => {
+  if (app.thinking || (app.inputFloor && e.timeStamp < app.inputFloor + 120)) return; // taps queued while the master was thinking
   const dEl = e.target.closest('[data-dir]');
   if (dEl && canAct() && app.st.g.phase === 'tane') { app.taneDir = +dEl.dataset.dir; return render(); }
   const t = e.target.closest('[data-h]'); if (!t || !canAct()) return;
@@ -1634,6 +1656,7 @@ $('#board').addEventListener('click', e => {
   }
 });
 function onAction(e) {
+  if (app.thinking || (app.inputFloor && e.timeStamp < app.inputFloor + 120)) return;
   const b = e.target.closest('button'); if (!b) return;
   const st = app.st, g = st.g;
   if (b.id === 'tTile') attempt(() => MK.resolveTane(st, g.turn, false));
@@ -1668,6 +1691,7 @@ function botTurn() {
     } catch (e) { console.error(e); }
     app.thinking = false;
     app.hintText = '';
+    app.inputFloor = performance.now(); app.sel = null;
     if (ns) { commit(ns); if (prefs.sound && ns.g.phase !== 'tane') Sound.turn(); } else render();
   }, 450);
 }
@@ -2032,7 +2056,6 @@ $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); })
 // ---------- init ----------
 (() => { const wrap = $('#boardWrap'), host = document.createElement('div'); host.className = 'board-host'; wrap.parentNode.insertBefore(host, wrap); host.appendChild(wrap); host.appendChild($('#ask'));
   const ub = document.createElement('div'); ub.id = 'underBoard'; host.parentNode.insertBefore(ub, host.nextSibling); ub.addEventListener('click', onAction);
-  ub.addEventListener('input', e => { if (e.target.id === 'rpRange') setReplay(+e.target.value); });
   ub.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const N = app.rpStates ? app.rpStates.length - 1 : 0, k = app.replay === null || app.replay === undefined ? N : app.replay;
     if (b.id === 'rpPrev') setReplay(k - 1); else if (b.id === 'rpNext') setReplay(k + 1); else if (b.id === 'rpEnter') enterHere(); });
   // swipe over the board: left = back, right = forward
@@ -2040,8 +2063,12 @@ $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); })
   wrap.addEventListener('touchstart', e => { if (!app.st || app.st.g.phase !== 'over' || !app.rpStates || app.fxKey) return; const t = e.touches[0]; sx = t.clientX; sy = t.clientY; swiping = false; const N = app.rpStates.length - 1; sk = app.replay === null || app.replay === undefined ? N : app.replay; }, { passive: true });
   wrap.addEventListener('touchmove', e => { if (sx === null) return; const t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
     if (!swiping && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) swiping = true;
-    if (swiping) { e.preventDefault(); setReplay(sk + Math.round(dx / 22)); } }, { passive: false });
+    if (swiping) { e.preventDefault(); setReplay(sk + Math.round(dx / 16)); } }, { passive: false });
   wrap.addEventListener('touchend', () => { sx = null; swiping = false; }, { passive: true });
+  let mx = null, mk = 0;
+  wrap.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || !app.st || app.st.g.phase !== 'over' || !app.rpStates || app.fxKey) return; mx = e.clientX; const N = app.rpStates.length - 1; mk = app.replay === null || app.replay === undefined ? N : app.replay; });
+  window.addEventListener('pointermove', e => { if (mx === null) return; setReplay(mk + Math.round((e.clientX - mx) / 16)); });
+  window.addEventListener('pointerup', () => { mx = null; });
 })();
 $('#game').appendChild($('#chatPanel'));
 $('#bellBtn').addEventListener('click', () => { renderSettings(); $('#setPanel').hidden = false; });
