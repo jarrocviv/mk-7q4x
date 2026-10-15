@@ -1,5 +1,5 @@
 // Offline-Cache für Moeraki-Kemu
-const CACHE = 'moeraki-kemu-v24';
+const CACHE = 'moeraki-kemu-v25';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -15,7 +15,7 @@ self.addEventListener('fetch', e => {
   e.respondWith((url.origin === location.origin ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }) : fetch(req)).then(res => {
     if (res && (res.ok || res.type === 'opaque')) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
     return res;
-  }).catch(() => caches.match(req).then(r => r || caches.match('./index.html'))));
+  }).catch(() => caches.match(req).then(r => r || (req.mode === 'navigate' ? caches.match('./index.html') : new Response('', { status: 504 }))))));
 });
 
 // Tippen auf eine Benachrichtigung öffnet die App

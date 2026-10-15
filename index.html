@@ -264,7 +264,7 @@ body.overdock .status{display:none}
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 24</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 25</p>
   </div>
 </section>
 
@@ -1053,6 +1053,8 @@ const cfg = { mode: 'grund', target: '5', mata: 'off', color: 'B', first: 'me' }
 const lcfg = { mode: 'grund', target: '5', mata: 'off', first: 'B' };
 const bcfg = { mode: 'meister', target: '5', mata: 'off', color: 'B', first: 'me', practice: 'off' };
 const CFGS = { cfg, lcfg, bcfg };
+// remember the chosen settings for each mode on this device
+try { const saved = JSON.parse(localStorage.getItem('mk-setup') || 'null'); if (saved) Object.keys(CFGS).forEach(k => { if (saved[k]) Object.keys(CFGS[k]).forEach(f => { if (typeof saved[k][f] === 'string') CFGS[k][f] = saved[k][f]; }); }); } catch (e) {}
 const app = { kind: null, st: null, me: null, id: null, sel: null, taneMode: false, taneDir: null, phaseKey: '',
   code: null, ref: null, unsub: null, doc: null, pendingRev: null, screen: 'home' };
 
@@ -1076,7 +1078,7 @@ function show(id) {
 document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) show(g.dataset.go);
   const b = e.target.closest('.seg[data-cfg] button');
-  if (b) { const seg = b.parentElement; const o = CFGS[seg.dataset.cfg]; o[seg.dataset.key] = b.dataset.v; syncSegs(); }
+  if (b) { const seg = b.parentElement; const o = CFGS[seg.dataset.cfg]; o[seg.dataset.key] = b.dataset.v; syncSegs(); try { localStorage.setItem('mk-setup', JSON.stringify(CFGS)); } catch (e) {} }
 });
 function syncSegs() {
   document.querySelectorAll('.seg[data-cfg]').forEach(seg => {
