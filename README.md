@@ -26,7 +26,8 @@ Diese App ist eine private, nicht offizielle Umsetzung für den eigenen Spielkre
 **Spielmodi**
 - **Online gegen einen Freund** – jeder auf seinem eigenen Handy, auch zeitversetzt
 - **Zu zweit auf einem Gerät** – das Handy wird weitergereicht
-- **Gegen den Meister** – ein Computergegner, der mehrere Züge vorausrechnet, keinen Fehler verzeiht und immer wieder andere Varianten spielt
+- **Gegen den Computer** – in vier Stärken: Lehrling, Krieger, Häuptling und der gnadenlose Meister, der immer wieder andere Varianten spielt
+- **Taktik-Rätsel** – 84 Stellungen, in denen sich der Sieg durch eine Kette von Drohungen erzwingen lässt (Gewinn in 2, 3 oder 4 Zügen), mit Rätsel des Tages
 - **Übungsmodus** gegen den Meister – warnt vor Gefahren („Vorsicht, Spielende in 3 Zügen möglich“), zeigt auf Wunsch den besten Zug und erlaubt das Zurücknehmen von Zügen
 
 **Regeln nach der Originalanleitung (3. Auflage)**
@@ -39,7 +40,8 @@ Diese App ist eine private, nicht offizielle Umsetzung für den eigenen Spielkre
 **Außerdem**
 - Spielbrett im Stil des Holz-Originals mit Skala, Lagerhäusern und Kugelablagen
 - Chat unter dem Spielbrett mit Schnellantworten und Anzeige, wenn der andere gerade schreibt
-- Nach Spielende stehen auf allen Kugeln die Zugnummern – so lässt sich der Spielverlauf nachvollziehen
+- Nach Spielende stehen auf allen Kugeln die Zugnummern; mit dem Schieber lässt sich die Partie Zug für Zug nachspielen
+- **Spielanalyse**: Der Computer markiert Fehler und zeigt, welcher Zug besser gewesen wäre
 - Zählleiste von Schwarz wahlweise weiß (wie im Original) oder schwarz
 - Eigener Klang, wenn der Freund gezogen hat oder ins Spiel kommt
 - Push-Benachrichtigungen aufs Handy, auch wenn die App geschlossen ist
@@ -83,9 +85,11 @@ Die enthaltene APK kann auf dem Handy installiert werden (Installation aus unbek
 
 ## Online mit Freunden spielen
 
+**Neu:** Einladung per Link oder QR-Code, eigene Namen, mehrere Partien gleichzeitig („Meine Partien“), „Zug zurücknehmen?“ mit Zustimmung des Gegenübers und Revanche mit Farbtausch. Alle Spielzüge, Chat-Nachrichten und Namen werden **Ende-zu-Ende verschlüsselt** (AES-256-GCM). Der Schlüssel entsteht aus dem 8-stelligen Partie-Code und verlässt nie die Handys – die Nachrichten-Server sehen nur unlesbare Daten.
+
 1. **Online gegen einen Freund** → Spielart, Anzahl der Siege, Farbe und Startspieler wählen → **Partie erstellen**
-2. Den angezeigten **5-stelligen Code** an den Freund schicken
-3. Der Freund wählt **Online gegen einen Freund**, gibt den Code ein und tippt auf **Beitreten**
+2. **Einladung teilen** (z. B. per WhatsApp) oder den **QR-Code** scannen lassen – alternativ den 8-stelligen Code weitergeben
+3. Der Freund tippt auf den Link bzw. gibt den Code unter **Online gegen einen Freund** ein
 
 Gut zu wissen:
 - Ihr müsst **nicht gleichzeitig** online sein. Der letzte Spielstand bleibt erhalten, bis der andere die App wieder öffnet.
@@ -151,9 +155,9 @@ Jeder Spieler richtet das auf seinem eigenen Handy ein.
 ## Datenschutz
 
 - Es gibt **keine Anmeldung** und es werden **keine Namen** gespeichert.
-- Spielstände, Chat-Nachrichten und der Anwesenheits-Status laufen unverschlüsselt über öffentliche Nachrichten-Server.
-  Sie enthalten nur Brettstellungen, kurze Chat-Texte und eine zufällige Geräte-Kennung.
-  Vertrauliches gehört deshalb nicht in den Chat.
+- Spielstände, Chat-Nachrichten, Namen und der Anwesenheits-Status laufen **Ende-zu-Ende verschlüsselt** über öffentliche Nachrichten-Server.
+  Wer den Partie-Code bzw. Einladungslink kennt, kann mitlesen – gebt ihn deshalb nur an eure Mitspieler weiter.
+- Push-Nachrichten über ntfy enthalten nur kurze Hinweise wie „hat gezogen“, nie Chat-Inhalte.
 - Push-Nachrichten laufen über ntfy.sh. Der zufällige Thema-Name wirkt wie ein Passwort und sollte nicht weitergegeben werden.
 - Alles andere bleibt auf dem eigenen Gerät gespeichert.
 
