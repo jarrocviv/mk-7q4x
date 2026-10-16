@@ -264,7 +264,7 @@ body.overdock .status{display:none}
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 25</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 26</p>
   </div>
 </section>
 
@@ -282,6 +282,7 @@ body.overdock .status{display:none}
     <button data-v="einsteiger">Einsteiger<small>ohne Plättchen</small></button>
     <button data-v="grund">Basisspiel</button>
     <button data-v="meister">Meisterspiel<small>mit Maori-Tane</small></button>
+    <button data-v="punkte">Punktespiel<small>Punkte zählen</small></button>
   </div>
   <label class="f">Gesamtsieg nach</label>
   <div class="seg" data-cfg="cfg" data-key="target">
@@ -318,6 +319,7 @@ body.overdock .status{display:none}
     <button data-v="einsteiger">Einsteiger<small>ohne Plättchen</small></button>
     <button data-v="grund">Basisspiel</button>
     <button data-v="meister">Meisterspiel<small>mit Maori-Tane</small></button>
+    <button data-v="punkte">Punktespiel<small>Punkte zählen</small></button>
   </div>
   <label class="f">Gesamtsieg nach</label>
   <div class="seg" data-cfg="lcfg" data-key="target">
@@ -348,6 +350,7 @@ body.overdock .status{display:none}
     <button data-v="einsteiger">Einsteiger<small>ohne Plättchen</small></button>
     <button data-v="grund">Basisspiel</button>
     <button data-v="meister">Meisterspiel<small>mit Maori-Tane</small></button>
+    <button data-v="punkte">Punktespiel<small>Punkte zählen</small></button>
   </div>
   <label class="f">Gesamtsieg nach</label>
   <div class="seg" data-cfg="bcfg" data-key="target">
@@ -419,6 +422,7 @@ body.overdock .status{display:none}
     <li><b>Einsteigerspiel:</b> ohne Stammesplättchen – gewonnen wird nur vorzeitig (Tahuna, Awa, Ara). Sind alle Mulden voll, ist es unentschieden.</li>
     <li><b>Basisspiel:</b> mit Stammesplättchen und Marae-Wertung.</li>
     <li><b>Meisterspiel:</b> zusätzlich mit dem Maori-Tane.</li>
+    <li><b>Punktespiel</b> (eigene Variante dieser App): wie das Meisterspiel, gespielt wird auch auf 3, 5, 7 oder 10 Siege. Am Ende jeder Partie werden die Plättchen-Punkte beider Spieler aufgeschrieben – auch bei einem vorzeitigen Sieg. Ist das Match vorbei, gewinnt, wer insgesamt die meisten Punkte hat; bei Gleichstand, wer die Siege erreicht hat. Ein schneller Sieg kann sich also lohnen – oder Punkte kosten.</li>
   </ul>
   <h3>Ablauf</h3>
   <ul>
@@ -530,7 +534,7 @@ const MK = (() => {
     };
   }
   function newMatch({ mode = 'grund', target = 5, first = 'B', mata = false } = {}) {
-    return { mode, target, mata: !!mata, wins: { B: 0, W: 0 }, gameNo: 1, matchWinner: null, g: newGame(first, null) };
+    return { mode, target, mata: !!mata, points: { B: 0, W: 0 }, wins: { B: 0, W: 0 }, gameNo: 1, matchWinner: null, g: newGame(first, null) };
   }
   const clone = o => JSON.parse(JSON.stringify(o));
 
@@ -591,7 +595,17 @@ const MK = (() => {
     const g = st.g;
     g.phase = 'over'; g.turn = null;
     g.result = { winner, reason, cells: cells || [], score: scores(g) };
-    if (winner) { st.wins[winner] += 1; if (st.wins[winner] >= st.target) st.matchWinner = winner; }
+    if (st.mode === 'punkte') { // Punktespiel: every game's tile points are added up
+      st.points = st.points || { B: 0, W: 0 };
+      st.points.B += g.result.score.B; st.points.W += g.result.score.W;
+    }
+    if (winner) {
+      st.wins[winner] += 1;
+      if (st.wins[winner] >= st.target) {
+        st.matchWinner = st.mode !== 'punkte' ? winner
+          : st.points.B > st.points.W ? 'B' : st.points.W > st.points.B ? 'W' : winner; // equal points: whoever reached the wins
+      }
+    }
   }
   function tileFor(g, a) { // tile earned by the stones around a completed field, or null
     const A = AREAS[a];
@@ -610,7 +624,7 @@ const MK = (() => {
     while (g.queue.length) {
       const it = g.queue[0];
       if (blockedSet(g).has(it.a)) { g.removed[it.a] = { o: it.o, v: it.v }; g.queue.shift(); continue; }
-      if (st.mode === 'meister' && !g.tanes[it.o] && it.v === 1) { g.phase = 'tane'; g.turn = it.o; return; }
+      if ((st.mode === 'meister' || st.mode === 'punkte') && !g.tanes[it.o] && it.v === 1) { g.phase = 'tane'; g.turn = it.o; return; }
       g.tiles[it.a] = { o: it.o, v: it.v }; g.queue.shift();
     }
     if (g.board.every(x => x !== null)) {
@@ -694,8 +708,6 @@ const MK = (() => {
   return { crossings, RING, HOLES, AREAS, AIDX, HIDX, HOLE_AREAS, CENTRAL, LINES, EDGES, DIRS, other, newMatch, newGame,
     placeBall, placeStone, resolveTane, nextGame, newMatchSame, sightLine, blockedSet, scores };
 })();
-
-
 // ===== Meister-Bot: Alpha-Beta-Suche mit Drohungslogik =====
 const AI = (() => {
   const WIN = 1e6, STOP = {};
@@ -719,10 +731,10 @@ const AI = (() => {
     } } }
     return t;
   });                              // tile point weight, area influence weight
-  let noTiles = false, b, pats, psize, cnt, holePats, blockedA, baseFull, rootDiff, ballPlacer, empties, deadline, nodes, tt, zob, hash, killers;
+  let noTiles = false, pointsMode = false, b, pats, psize, cnt, holePats, blockedA, baseFull, rootDiff, ballPlacer, empties, deadline, nodes, tt, zob, hash, killers;
 
   function setup(st) {
-    const g = st.g; noTiles = st.mode === 'einsteiger';
+    const g = st.g; noTiles = st.mode === 'einsteiger'; pointsMode = st.mode === 'punkte';
     b = new Int8Array(MK.HOLES.length);
     g.board.forEach((v, i) => { b[i] = v === 'B' ? 1 : v === 'W' ? 2 : v === 'O' ? 3 : 0; });
     const ball = g.ball, list = [];
@@ -797,6 +809,7 @@ const AI = (() => {
   }
   function final(p, ply) {
     if (noTiles) return 0;
+    if (pointsMode) { const t = tileDiff(false), w = t > 0 ? 1 : t < 0 ? 2 : ballPlacer; return pointsVal(p, w === p); }
     const t = tileDiff(false);
     const w = t > 0 ? 1 : t < 0 ? 2 : ballPlacer;
     const v = WIN / 2 - ply + Math.abs(t) * 10;
@@ -873,16 +886,29 @@ const AI = (() => {
     list.sort((u, v) => v[0] - u[0]);
     return list.slice(0, limit).map(x => x[1]);
   }
+  const WINP = 1.6; // Punktespiel: value of winning a game, in tile points
+  function pointsVal(p, won) { // from p's view: game ends now, tiles count, the winner gets WINP
+    const t = tileDiff(false) * (p === 1 ? 1 : -1);
+    return ((won ? WINP : -WINP) + t) * TW;
+  }
   function search(depth, alpha, beta, p, ply) {
+    let winV = -Infinity;
     if ((++nodes & 1023) === 0 && performance.now() > deadline) throw STOP;
     const o = 3 - p;
-    if (hasWin(p)) return WIN - ply;
-    if (empties === 0) return final(p, ply);
+    if (pointsMode) {
+      if (hasWin(p)) { winV = pointsVal(p, true); if (winV >= beta || depth <= 0) return winV; if (winV > alpha) alpha = winV; } // he may also play on
+      if (empties === 0) return final(p, ply);
+      const ot2 = threats(o);
+      if (ot2.length >= 2 && !hasWin(p)) return pointsVal(p, false);
+    } else {
+      if (hasWin(p)) return WIN - ply;
+      if (empties === 0) return final(p, ply);
+    }
     const ot = threats(o);
-    if (ot.length >= 2) return -(WIN - ply - 1);
+    if (!pointsMode && ot.length >= 2) return -(WIN - ply - 1);
     if (depth <= 0 && ot.length === 0) {
       vcfNodes = 0; vcfBudget = 400;
-      if (vcf(p, 8)) return WIN - ply - 4;
+      if (!pointsMode && vcf(p, 8)) return WIN - ply - 4;
       return evaluate(p);
     }
     const key = hash * 2 + p, e = tt.get(key);
@@ -897,7 +923,7 @@ const AI = (() => {
     }
     const moves = ot.length === 1 ? ot : genMoves(p, empties <= 9 ? 99 : depth >= 4 ? 12 : depth >= 2 ? 10 : 8, ttMove, ply);
     const nd = ot.length === 1 ? depth : depth - 1; // forced replies don't use up depth
-    let best = -Infinity, bestM = moves[0]; const a0 = alpha;
+    let best = winV, bestM = moves[0]; const a0 = alpha;
     for (const m of moves) {
       make(m, p);
       const v = -search(nd, -beta, -alpha, o, ply + 1);
@@ -913,15 +939,16 @@ const AI = (() => {
     setup(st);
     const p = who === 'B' ? 1 : 2, o = 3 - p;
     const free = []; for (let h = 0; h < b.length; h++) if (!b[h]) free.push(h);
-    const mine = threats(p); if (mine.length) return { best: mine[0], cands: [[mine[0], WIN]], v: WIN };
+    const mine = threats(p); if (mine.length && !pointsMode) return { best: mine[0], cands: [[mine[0], WIN]], v: WIN };
     const ot = threats(o); if (ot.length === 1) return { best: ot[0], cands: [[ot[0], 0]], v: 0 };
     deadline = performance.now() + ms; nodes = 0;
     // a forced win by continuous threats?
-    const vm = vcfMove(p, 14, 60000);
+    const vm = pointsMode ? -1 : vcfMove(p, 14, 60000);
     if (vm >= 0) return { best: vm, cands: [[vm, WIN - 30]], v: WIN - 30 };
+    const winNow = pointsMode ? new Set(mine) : new Set();
     // which of my moves would allow the opponent a forced win by continuous threats?
     const unsafe = new Set();
-    for (const m of free) { make(m, p); if (oppHasVcf(o, 12, 6000)) unsafe.add(m); unmake(m, p); }
+    if (!pointsMode) for (const m of free) { make(m, p); if (oppHasVcf(o, 12, 6000)) unsafe.add(m); unmake(m, p); }
     const safeFree = free.filter(m => !unsafe.has(m));
     let best = genMoves(p, 99, -1, 0).filter(m => !unsafe.has(m))[0];
     if (best === undefined) best = genMoves(p, 99, -1, 0)[0];
@@ -932,9 +959,9 @@ const AI = (() => {
         if (safeFree.length) order = order.filter(m => !unsafe.has(m));
         let cur = order[0], curV = -Infinity, alpha = -Infinity; const list = [];
         for (const m of order) {
-          make(m, p);
-          const v = -search(depth - 1, -Infinity, -(alpha - margin), o, 1);
-          unmake(m, p);
+          let v;
+          if (winNow.has(m)) v = pointsVal(p, true);            // taking the game now locks in the current tiles
+          else { make(m, p); v = -search(depth - 1, -Infinity, -(alpha - margin), o, 1); unmake(m, p); }
           if (v > curV) { curV = v; cur = m; }
           if (v > alpha) alpha = v;
           list.push([m, v]);
@@ -1349,7 +1376,7 @@ function boardSVG(st, o) {
         const n = Math.min(per[i], 4);
         for (let k = 0; k < n; k++) out.push(tileShape(p, q, x - k * .55, y - k * .7, 7.6, q === 'W' ? 180 : 0));
       });
-      if (st.mode === 'meister' && !g.tanes[q]) { const [cx, cy] = CAVE[q]; out.push(taneFig(p, cx, cy, null, q)); }
+      if ((st.mode === 'meister' || st.mode === 'punkte') && !g.tanes[q]) { const [cx, cy] = CAVE[q]; out.push(taneFig(p, cx, cy, null, q)); }
     });
   }
   g.tiles.forEach((t, a) => { if (t) out.push(tileSVG(p, a, t)); });
@@ -1423,9 +1450,9 @@ function render() {
   ['B', 'W'].forEach(p => {
     const el = $('#pl' + p);
     el.classList.toggle('turn', g.turn === p);
-    el.innerHTML = `${logoBadge(p)}<span class="pl-t"><span class="nm">${nameOf(p)}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? `<i class="pres ${net.presence[p] ? 'on' : ''}" title="${net.presence[p] ? 'im Spiel' : 'nicht im Spiel'}"></i>` : ''}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? (net.presence[p] ? ', im Spiel' : ', abwesend') : ''}</span></span>`;
+    el.innerHTML = `${logoBadge(p)}<span class="pl-t"><span class="nm">${nameOf(p)}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? `<i class="pres ${net.presence[p] ? 'on' : ''}" title="${net.presence[p] ? 'im Spiel' : 'nicht im Spiel'}"></i>` : ''}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen${st.mode === 'punkte' ? `</span><span class="sub">Gesamt: ${fmt((st.points || {})[p] || 0)}` : ''}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? (net.presence[p] ? ', im Spiel' : ', abwesend') : ''}</span></span>`;
   });
-  $('#gameInfo').textContent = `Partie ${st.gameNo}, ${{ meister: 'Meisterspiel', grund: 'Basisspiel', einsteiger: 'Einsteigerspiel' }[st.mode]}${st.mata ? ' mit Mata' : ''}` + (app.kind === 'online' ? `, Code ${net.code}, ${net.connected ? 'online' : 'offline'}` : '');
+  $('#gameInfo').textContent = `Partie ${st.gameNo}, ${{ punkte: 'Punktespiel', meister: 'Meisterspiel', grund: 'Basisspiel', einsteiger: 'Einsteigerspiel' }[st.mode]}${st.mata ? ' mit Mata' : ''}` + (app.kind === 'online' ? `, Code ${net.code}, ${net.connected ? 'online' : 'offline'}` : '');
   const overKey = app.kind + '-' + (app.kind === 'online' ? net.code : '') + '-' + st.gameNo + '-' + (g.result ? g.result.reason + g.moves : '');
   if (g.phase === 'over' && app.prevPhase && app.prevPhase !== 'over' && app.fxDone !== overKey && app.fxKey !== overKey) startEndFx(overKey);
   app.prevPhase = g.phase;
@@ -1495,6 +1522,7 @@ function render() {
       marae: `nach Punkten, ${fmt(r.score.B)} zu ${fmt(r.score.W)} (Schwarz zu Weiß).`, 'marae-gleich': `bei Punktgleichstand (${fmt(r.score.B)} zu ${fmt(r.score.W)}) – wer die Kugel gelegt hat, gewinnt.` }[r.reason];
     const title = !w ? 'Unentschieden' : app.kind !== 'local' ? (w === app.me ? 'Du gewinnst diese Partie' : OPP() + ' gewinnt diese Partie') : nameOf(w) + ' gewinnt diese Partie';
     s = '';
+    const ptsLine = st.mode === 'punkte' && st.points ? `<p class="soft">Punkte dieser Partie ${fmt(r.score.B)} zu ${fmt(r.score.W)}, insgesamt <b>${fmt(st.points.B)} zu ${fmt(st.points.W)}</b> (Schwarz zu Weiß).</p>` : '';
     const nextBtn = (id, label) => {
       if (app.kind !== 'online') return `<button class="btn primary ov-next" id="${id}">${label}</button>`;
       const rd = st.ready || {}, mineR = !!rd[app.me], theirs = !!rd[MK.other(app.me)];
@@ -1503,10 +1531,11 @@ function render() {
     };
     const next = w || MK.other(g.ballPlacer), nextName = app.kind !== 'local' ? (next === app.me ? 'du' : opp()) : nameOf(next);
     if (st.matchWinner) {
-      const mt = app.kind !== 'local' ? (st.matchWinner === app.me ? 'Damit hast du das Moeraki-Kemu gewonnen!' : 'Damit hat ' + opp() + ' das Moeraki-Kemu gewonnen.') : nameOf(st.matchWinner) + ' gewinnt das Moeraki-Kemu!';
-      html = `<div class="sheet over">${nextBtn('newMatch', 'Neues Match starten')}<h3>${title}</h3><p>${reason}</p><p class="soft"><b>${mt}</b> Endstand ${st.wins.B} zu ${st.wins.W}.</p></div>`;
+      const byPts = st.mode === 'punkte' ? ' nach Gesamtpunkten' : '';
+      const mt = app.kind !== 'local' ? (st.matchWinner === app.me ? 'Damit hast du das Moeraki-Kemu' + byPts + ' gewonnen!' : 'Damit hat ' + opp() + ' das Moeraki-Kemu' + byPts + ' gewonnen.') : nameOf(st.matchWinner) + ' gewinnt das Moeraki-Kemu' + byPts + '!';
+      html = `<div class="sheet over">${nextBtn('newMatch', 'Neues Match starten')}<h3>${title}</h3><p>${reason}</p>${ptsLine}<p class="soft"><b>${mt}</b> Endstand ${st.wins.B} zu ${st.wins.W}.</p></div>`;
     } else {
-      html = `<div class="sheet over">${nextBtn('nextGame', 'Nächste Partie')}<h3>${title}</h3><p>${reason}</p><p class="soft">Stand ${st.wins.B} zu ${st.wins.W} (Schwarz zu Weiß), gespielt wird auf ${st.target} Siege. Die Kugel legt ${nextName}.</p></div>`;
+      html = `<div class="sheet over">${nextBtn('nextGame', 'Nächste Partie')}<h3>${title}</h3><p>${reason}</p>${ptsLine}<p class="soft">Stand ${st.wins.B} zu ${st.wins.W} (Schwarz zu Weiß), gespielt wird auf ${st.target} Siege. Die Kugel legt ${nextName}.</p></div>`;
     }
   }
   $('#status').textContent = s;
@@ -1575,6 +1604,7 @@ function enterHere() {
   const old = app.st, ns = JSON.parse(JSON.stringify(R[k])), w = old.g.result && old.g.result.winner;
   ns.wins = Object.assign({}, old.wins); if (w) ns.wins[w] = Math.max(0, ns.wins[w] - 1);
   ns.matchWinner = null; ns.gameNo = old.gameNo;
+  if (old.points && old.g.result) ns.points = { B: old.points.B - old.g.result.score.B, W: old.points.W - old.g.result.score.W };
   app.st = ns; app.hist = []; app.replay = null; app.rpStates = null; app.rpKey = null; app.prevPhase = ns.g.phase;
   app.hint = null; app.hintText = ''; app.anaKey = ''; app.phaseKey = '';
   saveBot(); render(); botTurn();
@@ -1592,7 +1622,8 @@ function startEndFx(key) {
   else if (app.kind === 'local') { kind = 'win'; title = (w === 'B' ? 'Schwarz' : 'Weiß') + ' gewinnt!'; }
   else if (w === app.me) { kind = 'win'; title = 'Gewonnen!'; sub = 'Du gewinnst ' + sub; }
   else { kind = 'lose'; title = 'Verloren'; sub = (app.kind === 'bot' ? 'Der Meister' : 'Dein Freund') + ' gewinnt ' + sub; }
-  if (st.matchWinner) sub += (kind === 'win' || app.kind === 'local' ? ' – und das ganze Moeraki-Kemu!' : ' – und damit das Moeraki-Kemu.');
+  if (st.matchWinner && st.mode === 'punkte') sub += st.matchWinner === (app.kind === 'local' ? w : app.me) ? ' – Gesamtsieg nach Punkten für ' + (app.kind === 'local' ? (st.matchWinner === 'B' ? 'Schwarz' : 'Weiß') : 'dich') + '!' : ' – den Gesamtsieg nach Punkten holt ' + (app.kind === 'local' ? (st.matchWinner === 'B' ? 'Schwarz' : 'Weiß') : (app.kind === 'bot' ? 'der Meister' : 'dein Freund')) + '.';
+  else if (st.matchWinner) sub += (kind === 'win' || app.kind === 'local' ? ' – und das ganze Moeraki-Kemu!' : ' – und damit das Moeraki-Kemu.');
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el = document.createElement('div'); el.id = 'endFx'; el.className = 'endfx ' + kind; el.setAttribute('role', 'status');
   let parts = '';
