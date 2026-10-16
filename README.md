@@ -41,7 +41,11 @@ Diese App ist eine private, nicht offizielle Umsetzung für den eigenen Spielkre
 - Spielbrett im Stil des Holz-Originals mit Skala, Lagerhäusern und Kugelablagen
 - Chat unter dem Spielbrett mit Schnellantworten und Anzeige, wenn der andere gerade schreibt
 - Nach Spielende stehen auf allen Kugeln die Zugnummern; mit dem Schieber lässt sich die Partie Zug für Zug nachspielen
-- **Spielanalyse**: Der Computer markiert Fehler und zeigt, welcher Zug besser gewesen wäre
+- **Spielanalyse** (startet automatisch): markiert Fehler, erklärt sie und zeigt den besseren Zug; verpasste Siege werden zu eigenen Rätseln
+- **Rätsel-Wertung und Rätsel-Sprint** (5 Minuten)
+- **Statistik & Erfolge**: Bilanz, Siegarten, Serien und 25 Erfolge
+- **Bedenkzeit** wählbar (pro Zug oder pro Partie)
+- **Sicherung & Umzug** aller Daten per Datei (Einstellungen → Sicherung)
 - Zählleiste von Schwarz wahlweise weiß (wie im Original) oder schwarz
 - Eigener Klang, wenn der Freund gezogen hat oder ins Spiel kommt
 - Push-Benachrichtigungen aufs Handy, auch wenn die App geschlossen ist

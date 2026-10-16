@@ -2,6 +2,15 @@
 
 Die aktuelle Version steht in der App unten im Startmenü („App-Version …“).
 
+## Version 29 – Statistik, Erfolge, Bedenkzeit, Rätsel-Sprint
+- Der Computer rechnet im Hintergrund: kein Einfrieren mehr beim Nachdenken, bei Tipps, Analyse und Rätseln
+- Statistik & Erfolge: Bilanz gegen jede Computer-Stufe und jeden Freund, Siegarten, Serien, 25 Erfolge
+- Bedenkzeit wählbar: 30 s oder 1 min pro Zug, 5 oder 10 min pro Partie (Zeitablauf = Niederlage)
+- Rätsel-Wertung (startet bei 1000), „Passendes Rätsel für mich“, Rätsel-Sprint (5 Minuten, 3 Fehler)
+- Rätsel aus eigenen Partien: verpasste Siege werden automatisch zu Rätseln
+- Erklärende Analyse: Begründung zu jedem Fehler; Analyse startet nach Spielende automatisch
+- Sicherung & Umzug: alle Daten als Datei speichern und auf einem anderen Handy laden
+
 ## Version 28 – Rätsel bis 12 Züge
 - 122 neue Taktik-Rätsel: Gewinn in 5, 6, 7 und 8 Zügen sowie Meisterrätsel mit 9 bis 12 Zügen (insgesamt 206)
 - Rätsel-Übersicht nach Zuglänge gruppiert

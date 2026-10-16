@@ -261,6 +261,22 @@ body.overdock .status{display:none}
 .pz-cell.done{background:rgba(76,194,122,.2);border-color:#4CC27A;color:#6FD39A}
 #puzzles h3 .soft{font-size:14px;font-weight:400}
 .pz-bar{margin-top:8px}.pz-bar .btn{text-align:center}
+.pz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.pz-rate{background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:8px;text-align:center}
+.pz-rate b{display:block;font-family:var(--serif);font-size:24px}.pz-rate small{font-size:12px;color:var(--ink-soft)}
+.pz-cell.own{border-style:dashed}
+.pz-ok{color:#6FD39A!important;font-weight:700;text-align:center;font-size:16px!important}.pz-bad{color:#FF8A73!important;font-weight:700;text-align:center;font-size:16px!important}
+.sheet .good{color:#6FD39A}.sheet .bad{color:#FF8A73}
+.st-tab{width:100%;border-collapse:collapse;font-size:15px}.st-tab th{font-weight:400;color:var(--ink-soft);font-size:13px;text-align:right}.st-tab th:first-child{text-align:left}
+.st-tab td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}.st-tab td:first-child{text-align:left}
+.st-bar{display:grid;grid-template-columns:70px 1fr 30px;align-items:center;gap:8px;margin:5px 0;font-size:14px}.st-bar i{display:block;height:10px;border-radius:5px;background:#EADB4C;min-width:2px}.st-bar b{text-align:right}
+.ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ach{border-radius:12px;padding:8px 10px;background:var(--panel);border:1.5px solid var(--line);opacity:.45;filter:grayscale(1)}
+.ach.on{opacity:1;filter:none;border-color:#EADB4C}
+.ach .ach-i{font-size:24px;float:left;margin-right:8px}.ach b{display:block;font-size:14px}.ach small{font-size:12px;color:var(--ink-soft);line-height:1.25;display:block}
+.pl{position:relative}
+.clk{position:absolute;top:6px;right:8px;font-size:13px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.clk.run{color:#EADB4C}.clk.low{color:#FF6A55;animation:pulse 1s infinite}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -284,10 +300,11 @@ body.overdock .status{display:none}
     <button class="btn" data-go="botSetup">Gegen den Computer<small>Vom Lehrling bis zum gnadenlosen Meister</small></button>
     <button class="btn" data-go="localSetup">Zu zweit auf diesem Handy<small>Ihr reicht das Handy hin und her</small></button>
     <button class="btn" data-go="manual">Spielanleitung<small>Die Originalanleitung zum Durchblättern</small></button>
+    <button class="btn" data-go="stats">📊 Statistik &amp; Erfolge<small>Bilanz, Siegarten, Rätsel-Wertung</small></button>
     <button class="btn" data-go="puzzles">🧩 Taktik-Rätsel<small>Finde den erzwungenen Sieg</small></button>
     <button class="btn" data-go="rules">Kurzregeln</button>
     <button class="btn" id="homeBell">⚙️ Einstellungen<small>Zählleiste, Ton und Benachrichtigungen</small></button>
-    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 28</p>
+    <p class="soft" style="text-align:center;font-size:13px;margin-top:6px">App-Version 29</p>
   </div>
 </section>
 
@@ -321,6 +338,14 @@ body.overdock .status{display:none}
   <div class="seg" data-cfg="cfg" data-key="mata">
     <button data-v="off">Ohne</button>
     <button data-v="on">Mit Mata<small>Moeraki-Kreis besetzen</small></button>
+  </div>
+  <label class="f">Bedenkzeit</label>
+  <div class="seg" data-cfg="cfg" data-key="clock">
+    <button data-v="off">Ohne</button>
+    <button data-v="m30">30 s<small>pro Zug</small></button>
+    <button data-v="m60">1 min<small>pro Zug</small></button>
+    <button data-v="g5">5 min<small>pro Partie</small></button>
+    <button data-v="g10">10 min<small>pro Partie</small></button>
   </div>
   <label class="f">Deine Farbe</label>
   <div class="seg" data-cfg="cfg" data-key="color">
@@ -359,6 +384,14 @@ body.overdock .status{display:none}
     <button data-v="off">Ohne</button>
     <button data-v="on">Mit Mata<small>Moeraki-Kreis besetzen</small></button>
   </div>
+  <label class="f">Bedenkzeit</label>
+  <div class="seg" data-cfg="lcfg" data-key="clock">
+    <button data-v="off">Ohne</button>
+    <button data-v="m30">30 s<small>pro Zug</small></button>
+    <button data-v="m60">1 min<small>pro Zug</small></button>
+    <button data-v="g5">5 min<small>pro Partie</small></button>
+    <button data-v="g10">10 min<small>pro Partie</small></button>
+  </div>
   <label class="f">Wer legt die Kugel zuerst?</label>
   <div class="seg" data-cfg="lcfg" data-key="first">
     <button data-v="B">Schwarz<small>Matau</small></button>
@@ -389,6 +422,14 @@ body.overdock .status{display:none}
   <div class="seg" data-cfg="bcfg" data-key="mata">
     <button data-v="off">Ohne</button>
     <button data-v="on">Mit Mata<small>Moeraki-Kreis besetzen</small></button>
+  </div>
+  <label class="f">Bedenkzeit</label>
+  <div class="seg" data-cfg="bcfg" data-key="clock">
+    <button data-v="off">Ohne</button>
+    <button data-v="m30">30 s<small>pro Zug</small></button>
+    <button data-v="m60">1 min<small>pro Zug</small></button>
+    <button data-v="g5">5 min<small>pro Partie</small></button>
+    <button data-v="g10">10 min<small>pro Partie</small></button>
   </div>
   <label class="f">Deine Farbe</label>
   <div class="seg" data-cfg="bcfg" data-key="color">
@@ -448,8 +489,16 @@ body.overdock .status{display:none}
   <div class="top"><button class="link" data-go="home">← Zurück</button></div>
   <h2>Taktik-Rätsel</h2>
   <p class="soft">In jeder Stellung kannst du den Sieg erzwingen – durch eine Kette von Drohungen, auf die der Gegner antworten muss. Der Computer verteidigt sich dabei bestmöglich.</p>
-  <button class="btn primary" id="pzDaily">Rätsel des Tages</button>
+  <div id="pzStats" class="pz-stats"></div>
+  <button class="btn primary" id="pzFitBtn">Passendes Rätsel für mich</button>
+  <div class="row" style="margin-top:8px"><button class="btn" id="pzSprintBtn">⚡ Sprint (5 Minuten)</button><button class="btn" id="pzDaily">Rätsel des Tages</button></div>
   <div id="pzList"></div>
+</section>
+
+<section id="stats" class="screen">
+  <div class="top"><button class="link" data-go="home">← Zurück</button></div>
+  <h2>Statistik &amp; Erfolge</h2>
+  <div id="statsBody"></div>
 </section>
 
 <section id="rules" class="screen rules">
@@ -512,6 +561,9 @@ body.overdock .status{display:none}
 <div id="setPanel" class="chat-panel" hidden role="dialog" aria-label="Ton und Benachrichtigungen">
   <div class="chat-head"><b>Einstellungen</b><button class="link" id="setClose" aria-label="Schließen">✕</button></div>
   <div class="set-list">
+    <div class="set-row"><div><b>Sicherung &amp; Umzug</b><small>Partien, Rätsel, Statistik, Erfolge und Einstellungen als Datei sichern – oder damit auf ein neues Handy umziehen.</small></div></div>
+    <div class="row" style="margin:4px 0 8px"><button class="btn" id="bkSave">Sicherung speichern</button><button class="btn" id="bkLoad">Sicherung laden</button></div>
+    <input type="file" id="bkFile" accept=".json,application/json" hidden>
     <div class="set-row"><div><b>Zählleiste von Schwarz</b><small>Original: weiß wie die von Weiß. Alternativ schwarz, damit man sie leichter unterscheidet.</small></div><button class="tgl" id="pScale"></button></div>
     <div class="set-row"><div><b>Moeraki-Ruf</b><small>Erklingt, sobald dein Freund gezogen hat. Lautstärke = Medienlautstärke des Handys.</small></div><button class="tgl" id="pSound"></button></div>
     <button class="btn ghost" id="pTest" style="margin:8px 0">Ton anhören</button>
@@ -529,7 +581,7 @@ body.overdock .status{display:none}
 </div>
 <div class="toast" id="toast" role="status"></div>
 
-<script>
+<script id="core">
 // ===== Moeraki-Kemu engine (pure, JSON state) =====
 const MK = (() => {
   const md2 = n => ((n % 2) + 2) % 2;
@@ -749,7 +801,8 @@ const MK = (() => {
   function newMatchSame(st0) {
     return newMatch({ mode: st0.mode, target: st0.target, mata: st0.mata, first: st0.matchWinner || 'B' });
   }
-  return { crossings, RING, HOLES, AREAS, AIDX, HIDX, HOLE_AREAS, CENTRAL, LINES, EDGES, DIRS, other, newMatch, newGame,
+  function timeout(st0, loser) { const st = clone(st0); if (st.g.phase !== 'over') endGame(st, other(loser), 'zeit', []); return st; }
+  return { timeout, crossings, RING, HOLES, AREAS, AIDX, HIDX, HOLE_AREAS, CENTRAL, LINES, EDGES, DIRS, other, newMatch, newGame,
     placeBall, placeStone, resolveTane, nextGame, newMatchSame, sightLine, blockedSet, scores };
 })();
 // ===== Meister-Bot: Alpha-Beta-Suche mit Drohungslogik =====
@@ -1131,10 +1184,23 @@ const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return 
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// ---- Rechnen im Hintergrund: der Computer denkt in einem Web Worker, die Oberfläche bleibt bedienbar ----
+const Brain = (() => {
+  let w = null, seq = 0; const pending = {};
+  const local = (fn, args) => new Promise((res, rej) => setTimeout(() => { try { res(AI[fn](...args)); } catch (x) { rej(x); } }, 20));
+  try {
+    const core = document.getElementById('core').textContent;
+    const src = core + '\nonmessage = e => { const d = e.data; let res, err; try { res = AI[d.fn](...d.args); } catch (x) { err = String(x && x.stack || x); } postMessage({ id: d.id, res, err }); };';
+    w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    w.onmessage = e => { const q = pending[e.data.id]; delete pending[e.data.id]; if (q) (e.data.err ? q.rej(new Error(e.data.err)) : q.res(e.data.res)); };
+    w.onerror = ev => { console.error('worker', ev.message); const old = w; w = null; try { old.terminate(); } catch (x) {} Object.keys(pending).forEach(id => { const q = pending[id]; delete pending[id]; local(q.fn, q.args).then(q.res, q.rej); }); };
+  } catch (e) { w = null; }
+  return { call(fn, ...args) { if (!w) return local(fn, args); const id = ++seq; return new Promise((res, rej) => { pending[id] = { res, rej, fn, args }; w.postMessage({ id, fn, args }); }); } };
+})();
 
-const cfg = { mode: 'grund', target: '5', mata: 'off', color: 'B', first: 'me' };
-const lcfg = { mode: 'grund', target: '5', mata: 'off', first: 'B' };
-const bcfg = { mode: 'meister', target: '5', mata: 'off', color: 'B', first: 'me', practice: 'off', level: 'meister' };
+const cfg = { mode: 'grund', target: '5', mata: 'off', color: 'B', first: 'me', clock: 'off' };
+const lcfg = { mode: 'grund', target: '5', mata: 'off', first: 'B', clock: 'off' };
+const bcfg = { mode: 'meister', target: '5', mata: 'off', color: 'B', first: 'me', practice: 'off', level: 'meister', clock: 'off' };
 const CFGS = { cfg, lcfg, bcfg };
 // remember the chosen settings for each mode on this device
 try { const saved = JSON.parse(localStorage.getItem('mk-setup') || 'null'); if (saved) Object.keys(CFGS).forEach(k => { if (saved[k]) Object.keys(CFGS[k]).forEach(f => { if (typeof saved[k][f] === 'string') CFGS[k][f] = saved[k][f]; }); }); } catch (e) {}
@@ -1157,6 +1223,7 @@ function show(id) {
   if (id !== 'game') document.body.classList.remove('docked');
   if (typeof renderChat === 'function') setTimeout(renderChat, 0);
   if (id === 'puzzles') renderPuzzles();
+  if (id === 'stats') renderStats();
   if (id === 'home') { refreshHome(); if (typeof peekAll === 'function') peekAll(); }
   if (id === 'online') { $('#nameIn').value = prefs.name || ''; renderGameList(); if (typeof peekAll === 'function') peekAll(); }
 }
@@ -1513,11 +1580,12 @@ function render() {
   ['B', 'W'].forEach(p => {
     const el = $('#pl' + p);
     el.classList.toggle('turn', g.turn === p);
-    el.innerHTML = `${logoBadge(p)}<span class="pl-t"><span class="nm">${nameOf(p)}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? `<i class="pres ${net.presence[p] ? 'on' : ''}" title="${net.presence[p] ? 'im Spiel' : 'nicht im Spiel'}"></i>` : ''}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen${st.mode === 'punkte' ? `</span><span class="sub">Gesamt: ${fmt((st.points || {})[p] || 0)}` : ''}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? (net.presence[p] ? ', im Spiel' : ', abwesend') : ''}</span></span>`;
+    el.innerHTML = (st.clock && !(app.kind === 'bot' && p !== app.me) ? `<span class="clk" id="clk${p}">⏱ ${fmtClock(clockLeft(st, p))}</span>` : '') + `${logoBadge(p)}<span class="pl-t"><span class="nm">${nameOf(p)}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? `<i class="pres ${net.presence[p] ? 'on' : ''}" title="${net.presence[p] ? 'im Spiel' : 'nicht im Spiel'}"></i>` : ''}</span><span class="sub">${tribe(p)}, ${fmt(sc[p])} ${sc[p] === 1 ? 'Punkt' : 'Punkte'}</span><span class="sub">${st.wins[p]} von ${st.target} Siegen${st.mode === 'punkte' ? `</span><span class="sub">Gesamt: ${fmt((st.points || {})[p] || 0)}` : ''}${app.kind === 'online' && p !== app.me && typeof net !== 'undefined' && net.presence[p] !== undefined ? (net.presence[p] ? ', im Spiel' : ', abwesend') : ''}</span></span>`;
   });
   if (app.kind === 'puzzle') $('#gameInfo').textContent = 'Taktik-Rätsel'; else $('#gameInfo').textContent = `Partie ${st.gameNo}, ${{ punkte: 'Punktespiel', meister: 'Meisterspiel', grund: 'Basisspiel', einsteiger: 'Einsteigerspiel' }[st.mode]}${st.mata ? ' mit Mata' : ''}` + (app.kind === 'online' ? `, Code ${fmtCode(net.code)}, ${net.connected ? 'online' : 'offline'}` : '');
   const overKey = app.kind + '-' + (app.kind === 'online' ? net.code : '') + '-' + st.gameNo + '-' + (g.result ? g.result.reason + g.moves : '');
-  if (g.phase === 'over' && app.prevPhase && app.prevPhase !== 'over' && app.fxDone !== overKey && app.fxKey !== overKey) startEndFx(overKey);
+  if (g.phase === 'over' && app.prevPhase && app.prevPhase !== 'over' && app.statKey !== overKey) { app.statKey = overKey; if (app.kind === 'bot' || app.kind === 'online') Stats.recordGame(st); }
+  if (g.phase === 'over' && app.prevPhase && app.prevPhase !== 'over' && app.fxDone !== overKey && app.fxKey !== overKey && !(app.kind === 'puzzle' && app.sprint)) startEndFx(overKey);
   app.prevPhase = g.phase;
   const fxOn = g.phase === 'over' && app.fxKey === overKey;
   const act = canAct();
@@ -1528,7 +1596,7 @@ function render() {
   // replay after the game
   let view = st, rpHtml = '';
   if (g.phase === 'over' && !fxOn && app.kind !== 'puzzle') {
-    if (app.rpKey !== overKey) { app.rpKey = overKey; app.rpStates = buildReplay(st); app.replay = null; }
+    if (app.rpKey !== overKey) { app.rpKey = overKey; app.rpStates = buildReplay(st); app.replay = null; if (app.rpStates && app.rpStates.length > 2) setTimeout(() => { if (app.rpKey === overKey && !anaFor()) runAnalysis(true); }, 700); }
     const R = app.rpStates;
     if (R && R.length > 1) {
       const N = R.length - 1, k = app.replay === null || app.replay === undefined ? N : app.replay;
@@ -1547,7 +1615,7 @@ function render() {
   const who = g.turn, pre = app.kind === 'local' ? nameOf(who) + ': ' : '';
   if (app.kind === 'puzzle' && !(g.phase === 'over' && fxOn)) {
     const pz = app.pz;
-    s = g.phase === 'over' ? '' : pz.failed ? '' : app.thinking ? 'Der Gegner verteidigt sich …' : `Rätsel ${PUZZLES.filter((q, j) => j <= pz.i && q.n === pz.n).length}: Du bist ${app.me === 'B' ? 'Schwarz' : 'Weiß'} – gewinne in ${pz.n - pz.made} ${pz.n - pz.made === 1 ? 'Zug' : 'Zügen'}.`;
+    s = app.sprint && !app.sprint.over && g.phase !== 'over' && !pz.failed && !app.thinking ? sprintStatus() : g.phase === 'over' ? '' : pz.failed ? '' : app.thinking ? 'Der Gegner verteidigt sich …' : `Rätsel ${PUZZLES.filter((q, j) => j <= pz.i && q.n === pz.n).length}: Du bist ${app.me === 'B' ? 'Schwarz' : 'Weiß'} – gewinne in ${pz.n - pz.made} ${pz.n - pz.made === 1 ? 'Zug' : 'Zügen'}.`;
     html = puzzleHtml(g);
   } else if (g.phase === 'ball') {
     if (act) s = app.sel !== null ? 'Noch einmal tippen, um die Kugel zu legen.' : pre + 'Lege die Moeraki-Kugel in eine Mulde im weißen Kreis' + (g.prevBall !== null ? ' – nicht in dieselbe wie zuletzt.' : '.');
@@ -1585,7 +1653,7 @@ function render() {
     s = '';
   } else if (g.phase === 'over') {
     const r = g.result, w = r.winner;
-    const reason = { tahuna: 'durch Tahuna – ein Strandfeld mit vier eigenen Steinen umschlossen.', ara: 'durch Ara – eine ganze Außenkante belegt.', awa: 'durch Awa – eine durchgehende Diagonale gelegt.', mata: 'durch Mata – den Moeraki-Kreis mit eigenen Steinen besetzt.', remis: 'Alle Mulden sind belegt und niemand hat vorzeitig gewonnen – im Einsteigerspiel endet die Partie unentschieden.',
+    const reason = { tahuna: 'durch Tahuna – ein Strandfeld mit vier eigenen Steinen umschlossen.', ara: 'durch Ara – eine ganze Außenkante belegt.', awa: 'durch Awa – eine durchgehende Diagonale gelegt.', mata: 'durch Mata – den Moeraki-Kreis mit eigenen Steinen besetzt.', zeit: 'weil die Bedenkzeit abgelaufen ist.', remis: 'Alle Mulden sind belegt und niemand hat vorzeitig gewonnen – im Einsteigerspiel endet die Partie unentschieden.',
       marae: `nach Punkten, ${fmt(r.score.B)} zu ${fmt(r.score.W)} (Schwarz zu Weiß).`, 'marae-gleich': `bei Punktgleichstand (${fmt(r.score.B)} zu ${fmt(r.score.W)}) – wer die Kugel gelegt hat, gewinnt.` }[r.reason];
     const title = !w ? 'Unentschieden' : app.kind !== 'local' ? (w === app.me ? 'Du gewinnst diese Partie' : OPP() + ' gewinnt diese Partie') : nameOf(w) + ' gewinnt diese Partie';
     s = '';
@@ -1626,6 +1694,127 @@ function render() {
   renderPractice();
 }
 
+const APP_VERSION = 29;
+// ----- Statistik & Erfolge -----
+const ACH = [
+  ['erster', '🌱', 'Erster Sieg', 'Gewinne deine erste Partie.', S => S.w.length >= 1],
+  ['tahuna', '🏝️', 'Tahuna', 'Gewinne durch Tahuna.', S => S.w.some(g => g.reason === 'tahuna')],
+  ['awa', '🌊', 'Awa', 'Gewinne durch Awa.', S => S.w.some(g => g.reason === 'awa')],
+  ['ara', '🛤️', 'Ara', 'Gewinne durch Ara.', S => S.w.some(g => g.reason === 'ara')],
+  ['mata', '👁️', 'Mata', 'Gewinne durch Mata.', S => S.w.some(g => g.reason === 'mata')],
+  ['marae', '🪨', 'Marae', 'Gewinne eine Partie nach Punkten.', S => S.w.some(g => g.reason === 'marae' || g.reason === 'marae-gleich')],
+  ['lehrling', '🥉', 'Lehrmeister', 'Schlage den Lehrling.', S => S.w.some(g => g.opp === 'bot:lehrling')],
+  ['krieger', '🥈', 'Kriegerbezwinger', 'Schlage den Krieger.', S => S.w.some(g => g.opp === 'bot:krieger')],
+  ['haeuptling', '🥇', 'Häuptlingsbezwinger', 'Schlage den Häuptling.', S => S.w.some(g => g.opp === 'bot:haeuptling')],
+  ['meister', '👑', 'Meisterbezwinger', 'Schlage den Meister in einer Partie.', S => S.w.some(g => g.opp === 'bot:meister')],
+  ['meistermatch', '🏆', 'Größer als der Meister', 'Gewinne ein ganzes Match gegen den Meister.', S => S.games.some(g => g.opp === 'bot:meister' && g.match === 'win')],
+  ['punkte', '🧮', 'Punktesammler', 'Gewinne ein Match im Punktespiel.', S => S.games.some(g => g.mode === 'punkte' && g.match === 'win')],
+  ['serie5', '🔥', 'Siegesserie', 'Gewinne 5 Partien in Folge.', S => S.best >= 5],
+  ['online10', '🤝', 'Stammgast', 'Spiele 10 Online-Partien.', S => S.games.filter(g => g.kind === 'online').length >= 10],
+  ['tane3', '🗿', 'Wachsamer Tane', 'Räume mit einem Tane 3 gegnerische Plättchen auf einmal ab.', S => S.tane >= 3],
+  ['sauber', '✨', 'Fehlerfrei', 'Gewinne eine Partie ohne Fehler laut Analyse.', S => S.clean >= 1],
+  ['zeit', '⏱️', 'Kühler Kopf', 'Gewinne eine Partie mit Bedenkzeit.', S => S.w.some(g => g.clock)],
+  ['r10', '🧩', 'Rätselfreund', 'Löse 10 Taktik-Rätsel.', S => S.solved >= 10],
+  ['r50', '🧠', 'Rätselprofi', 'Löse 50 Taktik-Rätsel.', S => S.solved >= 50],
+  ['r150', '🦉', 'Rätselweise', 'Löse 150 Taktik-Rätsel.', S => S.solved >= 150],
+  ['lang', '🐋', 'Ika Moana', 'Löse ein Meisterrätsel (9 Züge oder mehr).', S => S.p.long >= 1],
+  ['eigen', '🪞', 'Aus Fehlern lernen', 'Löse ein Rätsel aus deiner eigenen Partie.', S => S.p.own >= 1],
+  ['sprint10', '⚡', 'Blitzdenker', 'Löse 10 Rätsel in einem Sprint.', S => S.p.sprintBest >= 10],
+  ['w1400', '📈', 'Aufsteiger', 'Erreiche eine Rätsel-Wertung von 1400.', S => S.rating >= 1400],
+  ['w1800', '🌟', 'Rätselmeister', 'Erreiche eine Rätsel-Wertung von 1800.', S => S.rating >= 1800],
+];
+const Stats = (() => {
+  const blank = () => ({ games: [], streak: 0, best: 0, tane: 0, clean: 0, p: { long: 0, own: 0, sprintBest: 0 } });
+  const load = () => { try { return Object.assign(blank(), JSON.parse(lsGet('mk-stats') || 'null') || {}); } catch (e) { return blank(); } };
+  const save = S => lsSet('mk-stats', JSON.stringify(S));
+  const unlocked = () => { try { return JSON.parse(lsGet('mk-ach') || '{}') || {}; } catch (e) { return {}; } };
+  function view(S) { return Object.assign({}, S, { w: S.games.filter(g => g.res === 'win'), solved: pzSolved().size, rating: pzRating() }); }
+  function check(S) {
+    const u = unlocked(), V = view(S); let neu = [];
+    ACH.forEach(([id, icon, name, , test]) => { if (!u[id]) { try { if (test(V)) { u[id] = Date.now(); neu.push(icon + ' ' + name); } } catch (e) {} } });
+    if (neu.length) { lsSet('mk-ach', JSON.stringify(u)); neu.forEach((t, i) => setTimeout(() => { toast('🏆 Erfolg freigeschaltet: ' + t); if (prefs.sound) Sound.win(); }, 1200 + i * 3300)); }
+  }
+  function recordGame(st) {
+    const g = st.g, r = g.result, me = app.me, o = MK.other(me); if (!r) return;
+    const res = !r.winner ? 'draw' : r.winner === me ? 'win' : 'loss';
+    const S = load();
+    S.games.push({ t: Date.now(), kind: app.kind, opp: app.kind === 'bot' ? 'bot:' + (app.level || 'meister') : 'friend:' + (friendName() || 'Freund'), mode: st.mode, res, reason: r.reason,
+      my: r.score[me], their: r.score[o], match: st.matchWinner ? (st.matchWinner === me ? 'win' : 'loss') : null, clock: !!st.clock });
+    S.games = S.games.slice(-1500);
+    S.streak = res === 'win' ? S.streak + 1 : res === 'loss' ? 0 : S.streak; S.best = Math.max(S.best, S.streak);
+    save(S); check(S);
+  }
+  function puzzleEvent(ev) {
+    const S = load();
+    if (ev.solved && ev.n >= 9) S.p.long++;
+    if (ev.solved && ev.own) S.p.own++;
+    if (ev.sprint !== undefined) S.p.sprintBest = Math.max(S.p.sprintBest, ev.sprint);
+    save(S); check(S);
+  }
+  function analysisDone(a) {
+    const g = app.st && app.st.g; if (!g || !g.result || g.result.winner !== app.me || app.kind === 'local') return;
+    if (a.res.some(e => e && e.who === app.me && e.tag && e.tag !== 'inexact')) return;
+    const S = load(); S.clean++; save(S); check(S);
+  }
+  function taneRemoved(n) { const S = load(); if (n > S.tane) { S.tane = n; save(S); check(S); } }
+  return { load, save, view, unlocked, recordGame, puzzleEvent, analysisDone, taneRemoved, reset() { lsDel('mk-stats'); lsDel('mk-ach'); } };
+})();
+function renderStats() {
+  const S = Stats.view(Stats.load()), u = Stats.unlocked(), G = S.games.filter(g => g.res !== undefined);
+  const wl = list => { const w = list.filter(g => g.res === 'win').length, l = list.filter(g => g.res === 'loss').length; return { w, l, d: list.length - w - l }; };
+  const all = wl(G), quote = G.length ? Math.round(all.w / G.length * 100) : 0;
+  const tile = (v, t) => `<div class="pz-rate"><b>${v}</b><small>${t}</small></div>`;
+  let h = `<div class="pz-stats">${tile(G.length, 'Partien')}${tile(all.w, 'Siege')}${tile(quote + ' %', 'Siegquote')}</div><div class="pz-stats">${tile(S.streak, 'Serie jetzt')}${tile(S.best, 'beste Serie')}${tile(S.games.filter(g => g.match === 'win').length, 'Matches gewonnen')}</div>`;
+  const levels = [['lehrling', 'Lehrling'], ['krieger', 'Krieger'], ['haeuptling', 'Häuptling'], ['meister', 'Meister']];
+  h += '<h3>Gegen den Computer</h3><table class="st-tab"><tr><th></th><th>Siege</th><th>Niederl.</th></tr>' + levels.map(([k, n]) => { const r = wl(G.filter(g => g.opp === 'bot:' + k)); return `<tr><td>${n}</td><td>${r.w}</td><td>${r.l}</td></tr>`; }).join('') + '</table>';
+  const friends = [...new Set(G.filter(g => g.kind === 'online').map(g => g.opp))];
+  if (friends.length) h += '<h3>Gegen Freunde</h3><table class="st-tab"><tr><th></th><th>Siege</th><th>Niederl.</th></tr>' + friends.map(f => { const r = wl(G.filter(g => g.opp === f)); return `<tr><td>${esc(f.slice(7))}</td><td>${r.w}</td><td>${r.l}</td></tr>`; }).join('') + '</table>';
+  const reasons = [['tahuna', 'Tahuna'], ['awa', 'Awa'], ['ara', 'Ara'], ['mata', 'Mata'], ['marae', 'Marae'], ['zeit', 'Zeit']];
+  h += '<h3>Deine Siege nach Art</h3><div class="st-bars">' + reasons.map(([k, n]) => { const c = S.w.filter(g => g.reason === k || (k === 'marae' && g.reason === 'marae-gleich')).length, m = Math.max(1, ...reasons.map(([kk]) => S.w.filter(g => g.reason === kk || (kk === 'marae' && g.reason === 'marae-gleich')).length)); return `<div class="st-bar"><span>${n}</span><i style="width:${c / m * 100}%"></i><b>${c}</b></div>`; }).join('') + '</div>';
+  h += `<h3>Rätsel</h3><div class="pz-stats">${tile(S.rating, 'Wertung')}${tile(S.solved, 'gelöst')}${tile(S.p.sprintBest, 'Sprint-Bestwert')}</div>`;
+  const nU = ACH.filter(a => u[a[0]]).length;
+  h += `<h3>Erfolge <span class="soft">(${nU} von ${ACH.length})</span></h3><div class="ach-grid">` + ACH.map(([id, icon, name, desc]) => `<div class="ach${u[id] ? ' on' : ''}"><span class="ach-i">${icon}</span><b>${name}</b><small>${desc}</small></div>`).join('') + '</div>';
+  h += '<button class="btn ghost" id="stReset" style="margin-top:16px">Statistik zurücksetzen</button>';
+  $('#statsBody').innerHTML = h;
+}
+// ----- Bedenkzeit -----
+function makeClock(v) {
+  const m = { m30: ['move', 30e3], m60: ['move', 60e3], g5: ['game', 300e3], g10: ['game', 600e3] }[v];
+  return m ? { type: m[0], limit: m[1], B: m[1], W: m[1], since: null } : null;
+}
+function clockOnCommit(old, ns) {
+  if (!ns || !ns.clock || !old) return ns;
+  const c = Object.assign({}, ns.clock), now = Date.now(), mover = old.g.turn;
+  if (old.clock && old.clock.since && old.g.phase !== 'over' && mover && old.gameNo === ns.gameNo && !(app.kind === 'bot' && mover !== app.me)) {
+    if (c.type === 'game') c[mover] = Math.max(0, old.clock[mover] - (now - old.clock.since)); else c[mover] = c.limit;
+  }
+  c.since = ns.g.phase === 'over' ? null : now;
+  if (c.type === 'move' && ns.g.turn) c[ns.g.turn] = c.limit;
+  ns.clock = c; return ns;
+}
+const fmtClock = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+function clockLeft(st, p) { const c = st.clock, g = st.g; if (!c) return null; return c[p] - (p === g.turn && c.since && g.phase !== 'over' ? Date.now() - c.since : 0); }
+setInterval(() => {
+  const st = app.st; if (!st || app.screen !== 'game') return;
+  if (app.kind === 'puzzle' && app.sprint && !app.sprint.over) {
+    if (Date.now() >= app.sprint.end && !app.thinking) { sprintEnd(); return; }
+    const s = $('#status'); if (s && !app.thinking && st.g.phase !== 'over' && !app.pz.failed) s.textContent = sprintStatus();
+    return;
+  }
+  if (!st.clock) return;
+  ['B', 'W'].forEach(p => { const el = $('#clk' + p); if (!el) return; if (app.kind === 'bot' && p !== app.me) { el.textContent = ''; return; } const left = clockLeft(st, p); el.textContent = '⏱ ' + fmtClock(left); el.classList.toggle('low', left < 10e3 && st.g.turn === p && st.g.phase !== 'over'); el.classList.toggle('run', st.g.turn === p && !!st.clock.since && st.g.phase !== 'over'); });
+  const g = st.g, t = g.turn;
+  if (g.phase === 'over' || !t || !st.clock.since) return;
+  const left = clockLeft(st, t), key = st.gameNo + '-' + g.moves + '-' + t;
+  if (left > 0 || app.toKey === key) return;
+  const mine = app.kind === 'local' || (app.kind === 'bot' && t === app.me) || (app.kind === 'online' && (t !== app.me || left < -4000));
+  if (!mine || (app.kind === 'bot' && t !== app.me)) return;
+  app.toKey = key; app.thinking = false;
+  commit(MK.timeout(st, t));
+}, 400);
+function sprintStatus() { const sp = app.sprint; return `⚡ Sprint ${fmtClock(sp.end - Date.now())} – ${sp.score} gelöst, ${sp.fails} von 3 daneben. Gewinn in ${app.pz.n - app.pz.made} ${app.pz.n - app.pz.made === 1 ? 'Zug' : 'Zügen'}!`; }
+// ----- Sicherung -----
+function backupData() { const data = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('mk-')) data[k] = localStorage.getItem(k); } return { app: 'moeraki-kemu', version: APP_VERSION, t: Date.now(), data }; }
 // ----- Spielverlauf nachspielen -----
 function buildReplay(st) {
   const g = st.g, L = g.log;
@@ -1647,56 +1836,109 @@ function buildReplay(st) {
 }
 // ----- Taktik-Rätsel -----
 const PUZZLES = [{"b":".........W.....B....W....B.O...B..........W.....W....B...","t":"............v.......................................","p":"W","n":2,"f":37},{"b":"..W...W........B..W..BBO.........W..W....B........B.W....","t":"....................................................","p":"B","n":2,"f":16},{"b":"..W...W...WB...BBWW..BBO...WB....W..W..W.B........B.WB..B","t":".............bb....bb...............................","p":"W","n":2,"f":38},{"b":"..W...W...WB..BBBWW.WBBO..BWB....W.WW..W.B........B.WB..B","t":".............bb...bbb...............................","p":"W","n":2,"f":38},{"b":"..W...W...WB..BBBWW.WBBO..BWB....W.WW..W.B...B..W.B.WB..B","t":".............bb...bbb...............................","p":"W","n":2,"f":38},{"b":"..W...W...WB..BBBWW.WBBO..BWB....W.WW..WWB...B..W.B.WB..B","t":".............bb...bbb...............................","p":"B","n":2,"f":55},{"b":"..W...W...WB..BBBWW.WBBO..BWB....W.WW..WWB...B..WBB.WB..B","t":".............bb...bbb...............................","p":"W","n":2,"f":38},{"b":"..W...W...WB..BBBWW.WBBOW.BWB....W.WW..WWB...B..WBB.WB..B","t":".............bb...bbb...............................","p":"B","n":2,"f":54},{"b":"..W...W...WB..BBBWW.WBBOW.BWB.B..W.WW..WWB...B..WBB.WB..B","t":".............bb...bbb...............................","p":"W","n":2,"f":13},{"b":"..W...W.W.WBBBBBBWW.WBBOW.BWB.B..W.WW..WWB...B.WWBB.WB..B","t":".............bbw..bbb..................v............","p":"W","n":2,"f":38},{"b":"BW...BW........B.......O.................W...W....WB.....","t":"h...................................................","p":"B","n":2,"f":4},{"b":"..B.W....BW....WW....B..WB.....BW.O...B.W...B........B.W.","t":".......w.....w......................................","p":"W","n":2,"f":5},{"b":"W.B.WB...BWW...WWB.W.BW.WB..B..BW.O...B.W...B........B.W.","t":"...w...ww....ww.....................................","p":"B","n":2,"f":39},{"b":"W.B.WB...BWW...WWB.W.BW.WB..B..BWBO...BWW...B........B.W.","t":"...w...ww....ww................b....b...............","p":"B","n":2,"f":42},{"b":".WB.W.W...WB....B.....O.......B...........B.....W........","t":".v..................................................","p":"W","n":2,"f":0},{"b":"..W.W...BB..W....O......B...B..............W..B....BW..W.","t":"....................................................","p":"W","n":2,"f":7},{"b":"..W.W...BBW.W....O......B...B.....B........W..B....BW..W.","t":"....................................................","p":"W","n":2,"f":7},{"b":".BW.W...BBW.W....O...W..B...B.....B........W..B....BW..W.","t":"....................................................","p":"W","n":2,"f":7},{"b":"WB.....B.....WB..BB...O.W.W..WB..BBW.BBWWBBWW.W.BW...W...","t":"...........................w....w.....w.bw...w......","p":"W","n":2,"f":45},{"b":"WB.....B.....WB..BBW..O.W.W..WB..BBW.BBWWBBWW.W.BW...W...","t":"................w..........w....w.....w.bw...w......","p":"B","n":2,"f":12},{"b":"WB.....B.....WB..BBWB.O.W.W..WB..BBW.BBWWBBWW.W.BW...W...","t":"................w..........w....w.....w.bw...w......","p":"W","n":2,"f":45},{"b":"WB.....BW....WB..BBWB.O.W.W..WB..BBW.BBWWBBWW.W.BW...W...","t":"...........w....w..........w....w.....w.bw...w......","p":"B","n":2,"f":12},{"b":"....W......B.........B......O..BBW...WB.......W.....W....","t":"....................................................","p":"W","n":2,"f":47},{"b":"....W......B.........B......O..BBW...WB..W....WB....W....","t":"............................................w.......","p":"W","n":2,"f":40},{"b":"...B....W.....W...............W..O........B..B.WB....W...","t":"....................................................","p":"B","n":2,"f":43},{"b":"B....W...W.WB..B....BWWB..WO.W.BBBW..W..BWBBW.B..WB..W.BW","t":"............h..........hw.........h.................","p":"W","n":2,"f":16},{"b":"BW...WB..W.WB..B....BWWB..WO.W.BBBW..W..BWBBW.B..WB..W.BW","t":"v...w.......h..........hw.........h.................","p":"W","n":2,"f":16},{"b":".....W...WBW..B.BB...WB...........O....W..W...B.....W....","t":"..............b.....................................","p":"B","n":2,"f":28},{"b":"WBWWBB.B.W.......O.WB....BW..W.W....WBB...W.B.BW....B...W","t":"h.v....................v..........v.................","p":"B","n":2,"f":43},{"b":"WBWWBB.B.W.......O.WB....BW..W.WB...WBB...WWB.BW....B...W","t":"h.v....................v..........vb................","p":"B","n":2,"f":33},{"b":"W.BB.BBWWB....B.WO...W......WBB...WW....WB...BWB...WW...B","t":"..h.............................w.....w....w....w...","p":"W","n":3,"f":10},{"b":"B...W....B......W....BW...B............O.W...W.....B....W","t":"....................................................","p":"B","n":3,"f":15},{"b":"..B.......W.....W.......WB.....BW.O...B..................","t":"....................................................","p":"W","n":3,"f":21},{"b":"..B.......W....WW....B..WB.....BW.O...B..............B.W.","t":".............w......................................","p":"W","n":3,"f":4},{"b":".WB...W...WB..........O.......B...........B.....W........","t":".v..................................................","p":"W","n":3,"f":4},{"b":"..W.W...BBW.W....O...W..B...B.....B........W..B....BW..W.","t":"....................................................","p":"B","n":3,"f":29},{"b":"W......B......B.......O............W.B..WBBW..W.B....W...","t":"......................................w.b...........","p":"W","n":3,"f":34},{"b":"W......B......B.......O..........B.W.B..WBBW..W.BW...W...","t":"......................................w.b....w......","p":"W","n":3,"f":34},{"b":"W......B......B...B...O......W...BBW.B.WWBBW..W.BW...W...","t":"................................w.....w.b....w......","p":"W","n":3,"f":44},{"b":"WB.....B.....WB...B...O......W...BBW.B.WWBBW..W.BW...W...","t":"................................w.....w.b....w......","p":"W","n":3,"f":44},{"b":"WB.....B.....WB...B...O.W....WB..BBW.B.WWBBW..W.BW...W...","t":"...........................w....w.....w.b....w......","p":"W","n":3,"f":44},{"b":"....W......B.........B......O..BBW.W.WB.BW....WB....W....","t":"......................................w.....w.......","p":"W","n":3,"f":36},{"b":".....W..B.W..W.........O..B.................W...B..B.....","t":"....................................................","p":"W","n":3,"f":0},{"b":".....W..B.W..WW........O..B....B............W...B..B.....","t":"....................................................","p":"W","n":3,"f":0},{"b":".....W..B.W..WW........O..B....B............W...B..B...W.","t":"....................................................","p":"B","n":3,"f":37},{"b":".....W..B.W..WW........O..B....BB....W.....BW...B..B...W.","t":".............................b......................","p":"W","n":3,"f":0},{"b":".....W..B.W..WW........O..B..W.BB....W.....BW..BB..B...W.","t":".............................b......................","p":"W","n":3,"f":0},{"b":"W........B.B.....O...B......W..W.W...B..W...........BB.W.","t":"....................................................","p":"W","n":3,"f":34},{"b":"W.....B....BW.W..B.B.........OW............W....W......B.","t":".........b..........................................","p":"B","n":3,"f":5},{"b":".........B....W..........B...O........W..W.BBW.BW........","t":"....................................................","p":"W","n":3,"f":19},{"b":"....W....B....W..........B...OB.......W..W.BBW.BW........","t":"....................................................","p":"W","n":3,"f":19},{"b":"..W.......W............O.....W..WW...BB....B............B","t":"...................................b................","p":"B","n":3,"f":48},{"b":"...B....W.....W...B...........W..O........B..B.WB....W...","t":"....................................................","p":"W","n":3,"f":19},{"b":".....................B.......B.W.O.....WW..W....B......B.","t":"....................................................","p":"W","n":3,"f":45},{"b":"...B.............................B.....O.....BW.W..WB...W","t":"................................................w...","p":"W","n":3,"f":53},{"b":"...B.........B..W................B.....O.....BW.W..WB...W","t":"................................................w...","p":"W","n":3,"f":53},{"b":".W.W....B.....WB....W..BBB.W...B.OWW.WW.B.WB.WW.BB.BBW.BW","t":"..................................v..........b.....h","p":"B","n":3,"f":18},{"b":"..........W....B..........W.O..W..B...B.....BW.W.........","t":"....................................................","p":"B","n":3,"f":33},{"b":".....W...WB...B.B....WB...........O....W..W...B.....W....","t":"....................................................","p":"B","n":3,"f":17},{"b":"W...BB...W.......O..B....BW....W..........W...B..........","t":".......................v............................","p":"W","n":3,"f":37},{"b":".........W....WB...........O.........WWB..B..B.W.........","t":"....................................................","p":"B","n":4,"f":40},{"b":".........W....WB...........O......B..WWBW.B..B.W.........","t":".....................................b..............","p":"B","n":4,"f":33},{"b":".....W...WB....BB...WW...B.O...BW....B..B.WWW.BWW...BB..W","t":"............vb....................h.....w...........","p":"B","n":4,"f":35},{"b":"..W............B..W..B.O.........W..W....B........B......","t":"....................................................","p":"W","n":4,"f":13},{"b":"..W............B..W..B.O.........W..W....B........B.W....","t":"....................................................","p":"B","n":4,"f":16},{"b":"..W............B..W..BBO.........W..W....B........B.W....","t":"....................................................","p":"W","n":4,"f":13},{"b":"..W...W...WB...BBWW..BBO...WB....W..W....B........B.WB...","t":".............bb....bb...............................","p":"W","n":4,"f":7},{"b":"..W...W...WB...BBWW..BBO...WB....W.WW..W.B........B.WB..B","t":".............bb....bb...............................","p":"B","n":4,"f":54},{"b":"..W...W...WB...BBWW.WBBO..BWB....W.WW..W.B........B.WB..B","t":".............bb...bbb...............................","p":"B","n":4,"f":54},{"b":"W.B.WB...BW....WW....B..WB.....BW.O...B.W...B........B.W.","t":"...w...w.....w......................................","p":"W","n":4,"f":46},{"b":"W.B.WB...BW....WW....BW.WB..B..BW.O...B.W...B........B.W.","t":"...w...w.....w......................................","p":"W","n":4,"f":46},{"b":"W.B.WB...BWW...WWB...BW.WB..B..BW.O...B.W...B........B.W.","t":"...w...ww....ww.....................................","p":"W","n":4,"f":46},{"b":".........B..W....O..........B..............W..B....BW..W.","t":"....................................................","p":"W","n":4,"f":56},{"b":"....W...BB..W....O..........B..............W..B....BW..W.","t":"....................................................","p":"W","n":4,"f":56},{"b":"..W.W...BBW.W....O......B...B..............W..B....BW..W.","t":"....................................................","p":"B","n":4,"f":40},{"b":".....B..BW...W.B...W......WO....BW...BBB.WWWB.BBB..W.W..W","t":"..............................b....bb...............","p":"W","n":4,"f":24},{"b":"W...BB...W.......O.......BW...............W...B..........","t":"....................................................","p":"W","n":4,"f":31},{"b":".........W...B.B.W..W.B..B.O...BB.W..W.BWBWB.WWWB..BWW..B","t":"............v.....................v..w.....ww.......","p":"W","n":4,"f":29},{"b":"..........BB....WWW...W.....O..W..........B...........BB.","t":"..............w.....................................","p":"W","n":4,"f":23},{"b":"B..W.W.WW.B.WBB.WB.B.WO...BBBB.WW...B.B.W..B...W.WW......","t":"......w....b.......w................................","p":"W","n":4,"f":44},{"b":"B..W.W.WW.B.WBB.WB.B.WO...BBBB.WW...B.B.W..B...W.WW.W...B","t":"......w....b.......w................................","p":"W","n":4,"f":46},{"b":".....B........WBW.W...BWB.B.......O...WB..WBW.WWBW..BB...","t":".........................................w...b......","p":"W","n":4,"f":12},{"b":"W..W...BB.B..WB..WBW..WBWW.BWOB..WBW..BWBB..W.BW.B.W....B","t":"................wv..wbw..wbw...wb...w.b.............","p":"W","n":4,"f":11},{"b":"BWBBW....BB....W...........O.........B....WB.W.W..W......","t":"....................................................","p":"W","n":4,"f":39},{"b":"W...B....BW....B......OW...............W..B.............W","t":".......b............................................","p":"B","n":5,"f":31},{"b":"..............WW.....W.....BB.........BO...W...W...BBB..W","t":"....................................................","p":"W","n":5,"f":10},{"b":"..............WW.....W..B..BBW........BO...W...W...BBB..W","t":"....................................................","p":"W","n":5,"f":10},{"b":"B..WWW.B.B......WO...............W................B....B.","t":"....................................................","p":"W","n":5,"f":10},{"b":"B..WWW.B.B..W...WO...............W..B.............B....B.","t":"....................................................","p":"W","n":5,"f":10},{"b":"B.WWWW.B.BWBW..BWO...W...........WB.B.BW.....W...WBB...B.","t":"..vw....w....w.................................b....","p":"B","n":5,"f":41},{"b":"B.....B.......W...................O.W.......W.W.....BB...","t":"....................................................","p":"W","n":5,"f":8},{"b":".....W..W....B........WO.B...W.BB.W...........BW....B...W","t":"....................................................","p":"B","n":5,"f":37},{"b":".W........B.......................O.W.B........W...WWB..B","t":"....................................................","p":"B","n":5,"f":54},{"b":"...B....W....BBW.....B....WW...BB.O....B...WWWB.....W....","t":"....................................................","p":"W","n":5,"f":49},{"b":"........B.W.............B........O........BW....B....W..W","t":"....................................................","p":"W","n":5,"f":55},{"b":"W..WW....BB....W.....BO...................B..............","t":"....................................................","p":"W","n":5,"f":2},{"b":"......W..BBBWB....W........O.................W...........","t":"....................................................","p":"W","n":5,"f":23},{"b":"........BWB..W.W.....B...........OW...WBW..W.WB.BBBW....B","t":".....................................w.....w........","p":"W","n":5,"f":29},{"b":"......W.W....B.BWOWB...BB.WBW..WBWW..W.B............B....","t":"................b............w.w....................","p":"B","n":5,"f":30},{"b":".............W....W.....B......B.O....B...BW....W........","t":"....................................................","p":"W","n":5,"f":12},{"b":".W.......B...W....W.WB..B......B.O....B...BW....W........","t":"....................................................","p":"W","n":5,"f":12},{"b":"...........B....W.....W.B.........O....B...WWWBW.BB.W...B","t":"....................................................","p":"W","n":5,"f":21},{"b":"....W....BW............B..........O...........BB....WW.BW","t":"....................................................","p":"W","n":5,"f":5},{"b":"...B..B..B.W.....O..............WB..............W.W......","t":"....................................................","p":"W","n":5,"f":42},{"b":"W..W..BBWBW..WB....B.............O.WB.......WB......WB...","t":"......w.............................................","p":"W","n":5,"f":5},{"b":"W..W....B....WB....B...O.....................W........B..","t":"...........b........................................","p":"W","n":5,"f":1},{"b":"......................B...W.....B.O...........BB....W.W.W","t":"....................................................","p":"W","n":5,"f":53},{"b":"B.......BWB....W............OW......W......W.BW........B.","t":"....................................................","p":"B","n":5,"f":5},{"b":"WWBWBBBBBWWBW.W.BO.......B.W..W.B..WW.W..BWB...W...B.B...","t":"vhh.bb..bb..................v....w.....v............","p":"W","n":5,"f":29},{"b":"W.BWBB.B.W.BWB...OW....BW....W............W....B.B......W","t":"..h............w.....w..............................","p":"W","n":5,"f":35},{"b":"B..BW....W...B.B...........O......W..B....W.....B....WBWW","t":"....................................................","p":"W","n":5,"f":52},{"b":"B..BW....W...B.B....W......O...B..W..B....W.....B....WBWW","t":"............v.....................h.................","p":"W","n":5,"f":52},{"b":"...BB..W....BW.B.WW..........OB...........BB.....W....W.W","t":"..........w.........................................","p":"W","n":5,"f":19},{"b":".W.W....B....W....B...BO...W.W..WW....BB.......B......B..","t":"..............................w.....................","p":"W","n":5,"f":0},{"b":"WB..B.B..BW....B......OW...............W..B............WW","t":".......b............................................","p":"W","n":6,"f":52},{"b":"WWBWBB..BW.......O......W.......B.........WB.....W.......","t":"v...................................................","p":"B","n":6,"f":38},{"b":"B.WWWW.B.BWBW..BWO...W...........WB.B.BW.........WB....B.","t":"..vw....w....w......................................","p":"B","n":6,"f":51},{"b":"BW.BW.B.WBWB.BW....W....WW...BB...O.W.WB....WWWB...BBBB.W","t":"...........w.....w....w.....v.......................","p":"W","n":6,"f":43},{"b":"...W.W......B.B........O..W....W......B....B...B...W.....","t":"....................................................","p":"W","n":6,"f":32},{"b":"........BWB....W.................O....W....W.WB.B.BW....B","t":"....................................................","p":"W","n":6,"f":37},{"b":".............WB..W.B.W...WWB...BW.O..W.B...B..W..B.BBW...","t":".................h......w....w......................","p":"W","n":6,"f":15},{"b":"........W....B..WO.B...B..WBW..WBWW..W.B............B....","t":".............................w.w....................","p":"B","n":6,"f":24},{"b":"WB..WW...BBB....WOW.....WB..W.....B...W.............B....","t":"v..w................................................","p":"B","n":6,"f":47},{"b":"...B.B.WWB...WB.......W...W.OW....B.......B............W.","t":"......w.............................................","p":"B","n":6,"f":20},{"b":"...B.B.WWB...WB...B...W...W.OW....B.......B.........W..W.","t":"......w.............................................","p":"B","n":6,"f":20},{"b":"W.......W....B.........O...BB........B.B....WW.......W...","t":"....................................................","p":"W","n":6,"f":4},{"b":"W.......W....B.........O...BB........B.B..W.WW..B....W...","t":"....................................................","p":"W","n":6,"f":4},{"b":"...BBBW.W.WWWB..WB....O..........B.....B..BWWBW..........","t":"........ww....w.....................................","p":"W","n":6,"f":2},{"b":"........B....W....W....O.............WB...BW...BW....BW..","t":"........................................w...........","p":"B","n":6,"f":14},{"b":"....W.....B...BBWW.W.B...W...O.WW.....B..B.B...W.........","t":".............b...v..................................","p":"B","n":6,"f":44},{"b":".W......W...BB....W....O............B.............B.W....","t":"....................................................","p":"W","n":6,"f":3},{"b":"..B......B.....................WW.W...WOWB....B....B....W","t":"....................................................","p":"B","n":6,"f":47},{"b":"W.BWBB.B.W.BWB...OW.....W.................W....B.B......W","t":"..h.................................................","p":"W","n":6,"f":29},{"b":"B..BW....W...B.B...........O......W..B....W.....B....W..W","t":"....................................................","p":"W","n":6,"f":55},{"b":"...WB..WB.W.BBWW..BBW.O.W.......W.BW....WBB.B.W..........","t":"..........bb....b.....................w.............","p":"B","n":6,"f":23},{"b":"...WB..WB.WWBBWW..BBW.O.W.......W.BW....WBB.B.W....B.....","t":"..........bb....b.....................w.............","p":"B","n":6,"f":23},{"b":"...BB.....W...........O.........B....WB..W...W.........W.","t":"....................................................","p":"B","n":6,"f":0},{"b":"...BB.....W...........OB...B....BW.W.WB..W..BW......W..W.","t":"..............................b.....................","p":"B","n":6,"f":0},{"b":".W..WB............WB..O..B.....WB.W.....B....B..W...W....","t":"....................................................","p":"B","n":6,"f":30},{"b":".W.BWB.W..........WB..O..B.....WB.W.....B....B..W...W....","t":"....................................................","p":"B","n":6,"f":30},{"b":".W.....BB...WW...BW.W..WBW.BWB...OW.B..W..BB....WB.......","t":"..........w....w..........w....w....................","p":"B","n":6,"f":38},{"b":".W.....BB...WW...BW.W..WBW.BWBW..OW.B..W..BB....WB..B....","t":"..........w....w..........w.v..w....................","p":"B","n":6,"f":38},{"b":"..BW.B.BB.....W.WO.......BB.W.....................W..W...","t":"..h.................................................","p":"W","n":6,"f":48},{"b":"...W...WW....BB...B...O..W......B........................","t":"......w.............................................","p":"W","n":6,"f":12},{"b":"....W........BW..B..W.BW.B.......W..W..O..W.WB.WBBBBBWBWW","t":"..........................................b...bb.hhv","p":"B","n":7,"f":11},{"b":".............WB..W.B.....WW....BW.O..W.B...B..W..B.BBW...","t":".................h...........w......................","p":"W","n":7,"f":21},{"b":"...BBB..W.WWWB..W.....O..........B.....B..BWWBW..........","t":"........w...........................................","p":"W","n":7,"f":6},{"b":".B.........W..W...B.....W......W.OB.B.B.W..W...BB...W....","t":"....................................................","p":"W","n":7,"f":8},{"b":"BB.......W........W..........WW...O............WB...B....","t":"....................................................","p":"B","n":7,"f":53},{"b":"...BB..W....BW...WW..........O.............B.............","t":"..........w.........................................","p":"W","n":7,"f":19},{"b":"...BB..W....BW.B.WW..........O.............B..........W..","t":"..........w.........................................","p":"W","n":7,"f":19},{"b":"...BB..W....BW.B.WW..........O............BB.....W....W..","t":"..........w.........................................","p":"W","n":7,"f":19},{"b":"....B....WW...................BBW......O....B..B..WB.WWBW","t":"..................................................vh","p":"W","n":7,"f":48},{"b":"..........W........B..............O.........W.WW.WB.BBWBB","t":"..............................................w..vh.","p":"W","n":7,"f":38},{"b":"B..W.W.......B...O...W..........B...BWB...WB....BW...W..W","t":"...................................b................","p":"B","n":7,"f":33},{"b":"...WB...B.W..BWW..BBW.O.W.......W.BW....WBB.B.W..........","t":"...........b....b.....................w.............","p":"B","n":7,"f":12},{"b":"..W...WB.B.BW....WB...BWWB..WBB...W....O.....W.W.W.BBB..W","t":".....w...w.....w....w.....w.........................","p":"B","n":7,"f":42},{"b":".W.BW..W..B.BW...BB...OW........B.W.....W................","t":"...............b....................................","p":"B","n":7,"f":11},{"b":"W..W....B..B.WB........O...B...W...W....BW..WB.B.........","t":"....................................................","p":"W","n":7,"f":9},{"b":".....W....BB....BWW...........W...O.........WWW....BBB...","t":"........b...........................................","p":"B","n":7,"f":21},{"b":".....W....BB....BWW...........W...O.........WWW...BBBBW..","t":"........b...........................................","p":"B","n":7,"f":21},{"b":".W....W.....BW........W.BB.BO.W.WW.B.BB..BWB...WB...WW..B","t":".........................w.........b....b...........","p":"W","n":7,"f":11},{"b":"W.BW....B..B..W....B.........O..WB.B..W........W.........","t":"....................................................","p":"W","n":7,"f":37},{"b":"............B..W....WW....B....W......BOB.BW...WWW.BBB..W","t":"..................w....v.....................w......","p":"B","n":7,"f":46},{"b":"..................W....O..BW.....BW...............B.WB...","t":"....................................................","p":"W","n":7,"f":8},{"b":"...................BB..B......W...O.W..W......W.....B....","t":"....................................................","p":"W","n":7,"f":41},{"b":"...W...........B....W.O....B..........B...W.....B.......W","t":"....................................................","p":"W","n":7,"f":9},{"b":"W...B...W.B..W...........W..B....OB....W...WW...B..B.....","t":"...............................b....................","p":"B","n":7,"f":15},{"b":"W.W.B..BW.B..W...........W..B....OB....W...WW...B..B.....","t":"...............................b....................","p":"B","n":7,"f":15},{"b":"....B...WW...B...W......W..............O.BW.WB.WBBBBBWBWW","t":"..........................................b...bb.hhv","p":"W","n":7,"f":14},{"b":"....B...WW...B...W..W...W......B.......O.BW.WB.WBBBBBWBWW","t":"..........................................b...bb.hhv","p":"W","n":7,"f":14},{"b":"....BW....W...W........W.....B.B..OBW.B.B..W..WB.........","t":"................................b...................","p":"W","n":7,"f":11},{"b":"......W.......B..............OB........WB....WW.......B..","t":"....................................................","p":"W","n":7,"f":44},{"b":"W...B...WW.....B..........BO.B..W....BW...BW...WW....B..B","t":"...................................w................","p":"W","n":7,"f":44},{"b":"....B...........BB.W..WW....W....O......W.........B......","t":"....................w...............................","p":"B","n":8,"f":9},{"b":"B...........W.B....WW.......BO...BW...WB...W.....B.W.....","t":"...............................b....................","p":"B","n":8,"f":22},{"b":"..........W........B..............O.........W.WW....BBWBB","t":"....................................................","p":"W","n":8,"f":49},{"b":"B..W.W.......B...O...W..........B...B.....WB....BW...W..W","t":"....................................................","p":"B","n":8,"f":38},{"b":"BW.W...BB....B.........B..W......O..........W.......W....","t":"......b.............................................","p":"W","n":8,"f":56},{"b":"...WB...B.W..BWW...BW.O.........W.BW....WBB.B.W..........","t":"...........b..........................w.............","p":"B","n":8,"f":18},{"b":"W.W.W..BWB....B..W.W.....B....B..OBW..W..W.WB...B......BB","t":".................h..................................","p":"W","n":8,"f":5},{"b":"..B.....W...W..W........B..B.O........W........W....B.B..","t":"....................................................","p":"W","n":8,"f":14},{"b":".W.BW..W..B.BW....B...O.........B.W.....W................","t":"....................................................","p":"B","n":8,"f":17},{"b":"...........B....BWW...........W...O.........WWW....BBB...","t":"....................................................","p":"B","n":8,"f":10},{"b":"..B......W.......O..........WW..B....WB.WWB...B..........","t":"....................................................","p":"B","n":8,"f":33},{"b":"BWWW...........W......B..........OBB.....B.BW...W........","t":"....................................................","p":"W","n":8,"f":8},{"b":"BWWW...........W......B..........OBB.....BWBW...W....B...","t":"....................................................","p":"W","n":8,"f":8},{"b":"BWWW...........W......B..........OBB.....BWBW...WB..WB...","t":".............................................b......","p":"W","n":8,"f":8},{"b":"........BW...W.....W.B.....O..............WB.......B.....","t":"....................................................","p":"W","n":8,"f":18},{"b":"....W..W...............W.W...B...OB..........B......B....","t":"....................................................","p":"W","n":8,"f":9},{"b":"W...B....W.....B..........BO....W.........BW...WW....B..B","t":"....................................................","p":"W","n":8,"f":38},{"b":"W...B...WW.....B..........BO.B..W.........BW...WW....B..B","t":"....................................................","p":"W","n":8,"f":38},{"b":"W..W....B.....W..W.B.....B...O.........W.B.....W....WB..B","t":".................h..................................","p":"B","n":8,"f":30},{"b":"B.......................W....W.B..W...BO..W.W...B....B.W.","t":"....................................................","p":"B","n":8,"f":43},{"b":"........W.BW.....BW.B.........B...O...W..WB..B..W....WB..","t":"....................................................","p":"W","n":8,"f":43},{"b":"...WB...B.W..B.W....W.O.........W.BW....WBB.B.W..........","t":"......................................w.............","p":"B","n":9,"f":19},{"b":"..B.....W.B.W..W........B..B.O........W...W....W....B.B..","t":"....................................................","p":"W","n":9,"f":48},{"b":"W.......B....W.........OB.W..WW....W.W..B.BB...BB....W...","t":"...........................w............b...........","p":"B","n":9,"f":14},{"b":"W..BBB..W.W....WB...WW....BBO.W...W......B.....B...WWBWBB","t":".............w....w................................h","p":"W","n":9,"f":40},{"b":"......WW....B..B......W...B.OB.....W.WW......B........W.B","t":"....................................................","p":"B","n":9,"f":21},{"b":"W...BWW..B.B.............W.OBW.......W.B..B.....B..BWWWB.","t":"....................................................","p":"W","n":9,"f":47},{"b":"W...BWW..B.B.............WWOBW.......WBB..B.....B..BWWWB.","t":"....................................................","p":"W","n":9,"f":47},{"b":"W...BWW..B.B.............WWOBW.WB....WBB..B.....B..BWWWB.","t":".............................w....v.................","p":"W","n":9,"f":47},{"b":"..WB...W......W..O...W.B.....B..B..B.B.....W.....W.......","t":"..v.................................................","p":"W","n":9,"f":12},{"b":"............B.W...............W.BO...BB...WW.W..W...BB...","t":"...................................b....w...........","p":"W","n":10,"f":8},{"b":"........WW...B..........W..............O.BW.WB.WBBBBBWBWW","t":"..........................................b...bb.hhv","p":"W","n":12,"f":20}];
-function pzSolved() { try { return new Set(JSON.parse(lsGet('mk-puz-solved') || '[]')); } catch (e) { return new Set(); } }
+const pzKey = p => p.b + p.p;
+function pzSolved() {
+  let arr = []; try { arr = JSON.parse(lsGet('mk-puz-solved') || '[]'); } catch (e) {}
+  const set = new Set(arr.map(x => typeof x === 'number' && PUZZLES[x] ? pzKey(PUZZLES[x]) : x)); // older versions stored numbers
+  return set;
+}
+function pzMarkSolved(p) { const s = pzSolved(); s.add(pzKey(p)); lsSet('mk-puz-solved', JSON.stringify([...s])); }
+function ownPuzzles() { try { return JSON.parse(lsGet('mk-own-puz') || '[]'); } catch (e) { return []; } }
+function allPuzzles() { return PUZZLES.concat(ownPuzzles().map(p => Object.assign({ own: true }, p))); }
+const pzDiff = p => 700 + 140 * p.n;
+function pzRating() { return +(lsGet('mk-pz-rating') || 1000); }
+function pzRate(p, score) { // Elo-artige Wertung: lösen ohne Hilfe = 1, mit Tipp = ½, nicht gelöst = 0
+  const r = pzRating(), e = 1 / (1 + Math.pow(10, (pzDiff(p) - r) / 400)), nr = Math.round(r + 32 * (score - e));
+  lsSet('mk-pz-rating', String(Math.max(100, nr))); return nr - r;
+}
+function pickSuitable(exclude) {
+  const L = allPuzzles(), done = pzSolved(), r = pzRating();
+  let c = L.map((p, i) => [p, i]).filter(([p, i]) => !done.has(pzKey(p)) && !(exclude && exclude.has(i)));
+  if (!c.length) c = L.map((p, i) => [p, i]).filter(([, i]) => !(exclude && exclude.has(i)));
+  c.sort((a, b) => Math.abs(pzDiff(a[0]) - r) - Math.abs(pzDiff(b[0]) - r));
+  const top = c.slice(0, 6); return top.length ? top[Math.floor(Math.random() * top.length)][1] : 0;
+}
 function renderPuzzles() {
-  const done = pzSolved(), box = $('#pzList');
+  const done = pzSolved(), box = $('#pzList'), L = allPuzzles();
+  const best = +(lsGet('mk-sprint-best') || 0);
+  $('#pzStats').innerHTML = `<div class="pz-rate"><b>${pzRating()}</b><small>Rätsel-Wertung</small></div><div class="pz-rate"><b>${[...done].length}</b><small>gelöst</small></div><div class="pz-rate"><b>${best}</b><small>Sprint-Bestwert</small></div>`;
   const groups = [[2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 99]];
-  box.innerHTML = groups.map(([lo, hi]) => {
-    const items = PUZZLES.map((p, i) => [p, i]).filter(([p]) => p.n >= lo && p.n <= hi);
+  const own = L.map((p, i) => [p, i]).filter(([p]) => p.own);
+  let html = own.length ? `<h3>Aus deinen Partien <span class="soft">(${own.filter(([p]) => done.has(pzKey(p))).length} von ${own.length} gelöst)</span></h3><div class="pz-grid">` +
+    own.map(([p, i], j) => `<button class="pz-cell own${done.has(pzKey(p)) ? ' done' : ''}" data-pz="${i}">${done.has(pzKey(p)) ? '✓' : j + 1}</button>`).join('') + '</div>' : '';
+  html += groups.map(([lo, hi]) => {
+    const items = L.map((p, i) => [p, i]).filter(([p]) => !p.own && p.n >= lo && p.n <= hi);
     if (!items.length) return '';
     const n = lo === hi ? lo : lo + ' bis ' + Math.max(...items.map(([p]) => p.n));
-    const solved = items.filter(([, i]) => done.has(i)).length;
+    const solved = items.filter(([p]) => done.has(pzKey(p))).length;
     return `<h3>${lo >= 9 ? 'Meisterrätsel: ' : ''}Gewinn in ${n} Zügen <span class="soft">(${solved} von ${items.length} gelöst)</span></h3><div class="pz-grid">` +
-      items.map(([, i], j) => `<button class="pz-cell${done.has(i) ? ' done' : ''}" data-pz="${i}">${done.has(i) ? '✓' : j + 1}</button>`).join('') + '</div>';
+      items.map(([p, i], j) => `<button class="pz-cell${done.has(pzKey(p)) ? ' done' : ''}" data-pz="${i}">${done.has(pzKey(p)) ? '✓' : j + 1}</button>`).join('') + '</div>';
   }).join('');
+  box.innerHTML = html;
 }
 function puzzleState(i) {
-  const p = PUZZLES[i], st = MK.newMatch({ mode: 'grund', target: 1 }), g = st.g;
+  const p = allPuzzles()[i], st = MK.newMatch({ mode: 'grund', target: 1 }), g = st.g;
   g.board = [...p.b].map(c => c === '.' ? null : c); g.ball = g.board.indexOf('O');
   g.tiles = [...p.t].map(c => c === '.' ? null : { o: c === 'b' || c === 'h' ? 'B' : 'W', v: c === 'b' || c === 'w' ? 1 : .5 });
   g.phase = 'play'; g.turn = p.p; g.moves = g.board.filter(v => v === 'B' || v === 'W').length; g.last = null; g.log = [];
   return st;
 }
-function startPuzzle(i) {
-  closeOnline(); app.kind = 'puzzle'; app.me = PUZZLES[i].p; app.thinking = false; app.phaseKey = ''; app.hint = null;
-  app.pz = { i, n: PUZZLES[i].n, made: 0, failed: false };
+function startPuzzle(i, keepSprint) {
+  closeOnline(); app.kind = 'puzzle'; const p = allPuzzles()[i]; app.me = p.p; app.thinking = false; app.phaseKey = ''; app.hint = null;
+  if (!keepSprint) app.sprint = null;
+  app.pz = { i, p, n: p.n, made: 0, failed: false, rated: false, helped: false };
   app.st = puzzleState(i); app.prevPhase = undefined; show('game'); render();
 }
-function puzzleAfterMove() {
+function startSprint() {
+  app.sprint = { end: Date.now() + 5 * 60 * 1000, score: 0, fails: 0, seen: new Set(), over: false };
+  const i = pickSuitable(app.sprint.seen); app.sprint.seen.add(i); startPuzzle(i, true);
+}
+function sprintNext() {
+  const sp = app.sprint; if (!sp || sp.over) return;
+  if (Date.now() >= sp.end || sp.fails >= 3) return sprintEnd();
+  const i = pickSuitable(sp.seen); sp.seen.add(i); startPuzzle(i, true);
+}
+function sprintEnd() {
+  const sp = app.sprint; if (!sp || sp.over) return; sp.over = true;
+  const best = +(lsGet('mk-sprint-best') || 0); sp.record = sp.score > best; if (sp.record) lsSet('mk-sprint-best', String(sp.score));
+  Stats.puzzleEvent({ sprint: sp.score }); render();
+}
+function pzFinish(solved) {
+  const pz = app.pz; if (pz.rated) return; pz.rated = true;
+  if (solved) pzMarkSolved(pz.p);
+  pz.delta = pzRate(pz.p, solved ? (pz.helped ? .5 : 1) : 0);
+  Stats.puzzleEvent({ solved, n: pz.n, own: !!pz.p.own });
+  if (app.sprint && !app.sprint.over) { if (solved) app.sprint.score++; else app.sprint.fails++; setTimeout(sprintNext, solved ? 700 : 1400); }
+}
+async function puzzleAfterMove() {
   const st = app.st, g = st.g, pz = app.pz;
-  if (g.phase === 'over') { if (g.result.winner === app.me) { const d = pzSolved(); d.add(pz.i); lsSet('mk-puz-solved', JSON.stringify([...d])); } else pz.failed = true; render(); return; }
+  if (g.phase === 'over') { pzFinish(g.result.winner === app.me); if (g.result.winner !== app.me) pz.failed = true; render(); return; }
   pz.made++;
-  if (pz.made >= pz.n) { pz.failed = true; render(); return; }
+  if (pz.made >= pz.n) { pz.failed = true; pzFinish(false); render(); return; }
   const def = MK.other(app.me); app.thinking = true; render();
-  setTimeout(() => {
-    let ns = st;
-    try { ns = MK.placeStone(st, AI.bestMove(st, def, 700, { varied: false }), def); } catch (e) { console.error(e); }
-    app.thinking = false; app.inputFloor = performance.now(); app.st = ns; app.hint = null;
-    if (ns.g.phase !== 'over' && !AI.puzzleInfo(ns, app.me, pz.n - pz.made - 1)) pz.failed = true;
-    render();
-  }, 400);
+  let ns = st;
+  try { ns = MK.placeStone(st, await Brain.call('bestMove', st, def, 700, { varied: false }), def); } catch (e) { console.error(e); }
+  if (app.kind !== 'puzzle' || app.pz !== pz) return;
+  app.thinking = false; app.inputFloor = performance.now(); app.st = ns; app.hint = null;
+  if (ns.g.phase === 'over' || !(await Brain.call('puzzleInfo', ns, app.me, pz.n - pz.made - 1))) { pz.failed = true; pzFinish(false); }
+  render();
 }
 function puzzleHtml(g) {
-  const pz = app.pz, left = pz.n - pz.made;
+  const pz = app.pz, sp = app.sprint;
+  const dl = pz.delta !== undefined ? ` <span class="${pz.delta >= 0 ? 'good' : 'bad'}">(${pz.delta >= 0 ? '+' : ''}${pz.delta} Wertung, jetzt ${pzRating()})</span>` : '';
+  if (sp && sp.over) return `<div class="sheet over"><button class="btn primary ov-next" id="pzSprint">⚡ Neuer Sprint</button><h3>Sprint vorbei${sp.record ? ' – neuer Bestwert! 🏆' : ''}</h3><p>${sp.score} ${sp.score === 1 ? 'Rätsel' : 'Rätsel'} gelöst, ${sp.fails} daneben.</p><button class="btn ov-next" id="pzBack">Zur Rätsel-Übersicht</button></div>`;
+  if (sp) return g.phase === 'over' && g.result.winner === app.me ? `<p class="ov-wait pz-ok">✓ Gelöst!${dl}</p>` : pz.failed ? `<p class="ov-wait pz-bad">✗ Daneben${dl}</p>` : `<div class="row pz-bar"><button class="btn" id="pzSkip">Überspringen</button><button class="btn" id="pzStop">Sprint beenden</button></div>`;
   if (g.phase === 'over' && g.result.winner === app.me) {
-    const nxt = PUZZLES.findIndex((p, i) => i > pz.i && !pzSolved().has(i));
-    return `<div class="sheet over">${nxt >= 0 ? `<button class="btn primary ov-next" id="pzGo" data-pz="${nxt}">Nächstes Rätsel</button>` : ''}<h3>Gelöst! 🎉</h3><p>Du hast den Sieg in ${pz.n} Zügen erzwungen.</p><button class="btn ov-next" id="pzBack">Zur Rätsel-Übersicht</button></div>`;
+    const L = allPuzzles(), done = pzSolved(), nxt = L.findIndex((p, i) => i > pz.i && !done.has(pzKey(p)));
+    return `<div class="sheet over">${nxt >= 0 ? `<button class="btn primary ov-next" id="pzGo" data-pz="${nxt}">Nächstes Rätsel</button>` : ''}<h3>Gelöst! 🎉</h3><p>Du hast den Sieg in ${pz.n} Zügen erzwungen.${dl}</p><div class="row"><button class="btn" id="pzFit">Passendes Rätsel</button><button class="btn" id="pzBack">Übersicht</button></div></div>`;
   }
-  if (pz.failed) return `<div class="sheet over"><h3>Leider nicht</h3><p>Jetzt kann sich der Gegner verteidigen. Versuch es noch einmal – jeder deiner Züge muss eine Drohung sein.</p><div class="row"><button class="btn" id="pzSolve">Lösung zeigen</button><button class="btn primary" id="pzReset">Nochmal</button></div></div>`;
+  if (pz.failed) return `<div class="sheet over"><h3>Leider nicht</h3><p>Jetzt kann sich der Gegner verteidigen. Versuch es noch einmal – jeder deiner Züge muss eine Drohung sein.${dl}</p><div class="row"><button class="btn" id="pzSolve">Lösung zeigen</button><button class="btn primary" id="pzReset">Nochmal</button></div></div>`;
   return `<div class="row pz-bar"><button class="btn" id="pzHint">💡 Tipp</button><button class="btn" id="pzReset">↺ Neu starten</button></div>`;
 }
 $('#pzList').addEventListener('click', e => { const b = e.target.closest('[data-pz]'); if (b) startPuzzle(+b.dataset.pz); });
 $('#pzDaily').addEventListener('click', () => startPuzzle(Math.floor(Date.now() / 864e5) % PUZZLES.length));
+$('#pzFitBtn').addEventListener('click', () => startPuzzle(pickSuitable()));
+$('#pzSprintBtn').addEventListener('click', startSprint);
 // ----- Spielanalyse -----
 const ANA_TAGS = { miss: ['🌟', 'Sieg verpasst', 'bad'], decisive: ['💀', 'Entscheidender Fehler', 'bad'], error: ['⚠️', 'Fehler', 'bad'], inexact: ['❔', 'Ungenau', 'warn'] };
 function anaFor() { return app.analysis && app.analysis.key === app.rpKey ? app.analysis : null; }
@@ -1707,7 +1949,7 @@ function anaLine(k) {
   if (!e) return '';
   if (!e.tag) return k > 0 ? '<span class="ok">✓ Guter Zug</span>' : '';
   const t = ANA_TAGS[e.tag];
-  return `<span class="${t[2]}">${t[0]} ${t[1]}</span> – besser wäre die <span class="good">grün markierte Mulde</span> gewesen.`;
+  return `<span class="${t[2]}">${t[0]} ${t[1]}</span> – ${e.why || 'besser wäre die grün markierte Mulde gewesen.'} <span class="good">(grün = besser)</span>`;
 }
 function anaControls() {
   const a = anaFor();
@@ -1718,37 +1960,57 @@ function anaControls() {
   return `<div class="ana-sum">${nm('B')}: ${cnt.B} ${cnt.B === 1 ? 'Fehler' : 'Fehler'}; ${nm('W')}: ${cnt.W} Fehler</div>` +
     (a.res.some(e => e && e.tag) ? '<button class="btn ana-btn" id="anaNext">Nächster Fehler ▶</button>' : '<div class="ana-sum">Keine Fehler gefunden – eine saubere Partie!</div>');
 }
-async function runAnalysis() {
+async function runAnalysis(silent) {
   const R = app.rpStates; if (!R) return;
-  const key = app.rpKey, N = R.length - 1, BIG = 1e6;
+  const key = app.rpKey, N = R.length - 1, BIG = 1e6, fin0 = app.st;
   const a = app.analysis = { key, res: [], step: 0, total: N, done: false };
   render();
+  const who2 = p => app.kind === 'local' ? (p === 'B' ? 'Schwarz' : 'Weiß') : p === app.me ? 'du' : opp();
   for (let k = 1; k <= N; k++) {
     if (app.analysis !== a) return;
-    const before = R[k - 1], after = R[k === N ? k : k], who = after.g.board[after.g.last];
+    const before = R[k - 1], after = R[k], who = after.g.board[after.g.last];
     if (before.g.phase === 'play' && (who === 'B' || who === 'W')) {
       try {
-        const best = AI.analyse(before, who, 160);
-        let pv;
-        const fin = k === N ? app.st : after;
+        const best = await Brain.call('analyse', before, who, 160);
+        let pv; const fin = k === N ? fin0 : after;
         if (fin.g.phase === 'over') pv = fin.g.result.winner === who ? BIG : fin.g.result.winner ? -BIG : 0;
-        else { const o = AI.analyse(fin, fin.g.turn, 160); pv = fin.g.turn === who ? o.v : -o.v; }
-        let tag = null; const played = after.g.last;
+        else { const o = await Brain.call('analyse', fin, fin.g.turn, 160); pv = fin.g.turn === who ? o.v : -o.v; }
+        let tag = null, why = ''; const played = after.g.last, d = best.v - pv;
         if (played !== best.move && !best.forced) {
-          const d = best.v - pv;
           if (best.v >= BIG / 2 - 200 && pv < BIG / 2 - 200) tag = 'miss';
           else if (best.v > -BIG / 2 && pv <= -BIG / 2 + 200) tag = 'decisive';
           else if (d >= 90) tag = 'error';
           else if (d >= 40) tag = 'inexact';
         } else if (played !== best.move && best.forced) tag = pv <= -BIG / 2 + 200 ? 'decisive' : 'error';
-        a.res[k] = { who, best: best.move, tag };
+        // explanations
+        const Who = s => s.charAt(0).toUpperCase() + s.slice(1);
+        if (tag === 'miss') {
+          const info = await Brain.call('puzzleInfo', before, who, 8);
+          why = info ? `Mit der grünen Mulde ${who === app.me || app.kind === 'local' ? (app.kind === 'local' ? 'hätte ' + who2(who) : 'hättest du') : 'hätte ' + who2(who)} den Sieg in ${info.n} ${info.n === 1 ? 'Zug' : 'Zügen'} erzwingen können.` : 'Hier war ein erzwungener Sieg möglich.';
+          if (info && info.n >= 2) saveOwnPuzzle(before, who, info);
+        } else if (tag === 'decisive') {
+          const o = MK.other(who);
+          const info = fin.g.phase === 'over' ? null : await Brain.call('puzzleInfo', fin, o, 8);
+          why = info ? (info.n === 1 ? `Eine Drohung blieb offen – ${who2(o)} konnte sofort gewinnen.` : `Danach konnte ${who2(o)} den Sieg in ${info.n} Zügen durch eine Drohkette erzwingen.`) : 'Ab hier war die Partie nicht mehr zu halten.';
+        } else if (tag === 'error' || tag === 'inexact') {
+          const pts = Math.round(d / 38 * 2) / 2;
+          why = pts >= .5 ? `Das verschlechtert die Stellung um etwa ${String(pts).replace('.5', '½').replace(/^0½/, '½')} ${pts === 1 ? 'Punkt' : 'Punkte'} (Strandfelder und Drohungen zusammen).` : 'Die grüne Mulde hält die Stellung besser zusammen.';
+          if (best.forced) why = 'Hier musste eine Drohung geblockt werden.';
+        }
+        a.res[k] = { who, best: best.move, tag, why };
       } catch (err) { console.error(err); }
     }
     a.step = k;
-    const btn = document.querySelector('.ana-btn'); if (btn) btn.textContent = `🔍 Analysiere … ${k} von ${N}`;
-    await new Promise(r => setTimeout(r, 0));
+    const btn = document.querySelector('.ana-btn'); if (btn && !a.done) btn.textContent = `🔍 Analysiere … ${k} von ${N}`;
   }
-  a.done = true; render();
+  a.done = true; Stats.analysisDone(a); render();
+}
+function saveOwnPuzzle(st, who, info) {
+  const g = st.g, b = g.board.map(v => v === null ? '.' : v).join('');
+  const t = g.tiles.map(x => !x ? '.' : x.o === 'B' ? (x.v === 1 ? 'b' : 'h') : (x.v === 1 ? 'w' : 'v')).join('');
+  const own = ownPuzzles(); if (own.some(p => p.b === b && p.p === who) || PUZZLES.some(p => p.b === b && p.p === who)) return;
+  own.push({ b, t, p: who, n: info.n, f: info.first, d: Date.now() }); lsSet('mk-own-puz', JSON.stringify(own.slice(-60)));
+  toast('🧩 Neues Rätsel aus deiner Partie gespeichert (Gewinn in ' + info.n + ' Zügen).');
 }
 function nextError() {
   const a = anaFor(); if (!a || !a.done) return;
@@ -1796,7 +2058,7 @@ function enterHere() {
   toast('Weiter geht’s ab Zug ' + ns.g.moves + '.');
 }
 // ----- Animation am Spielende -----
-const REASON_SHORT = { tahuna: 'durch Tahuna', ara: 'durch Ara', awa: 'durch Awa', mata: 'durch Mata', marae: 'durch Marae', 'marae-gleich': 'bei Punktgleichstand', remis: '' };
+const REASON_SHORT = { zeit: 'durch Zeitablauf', tahuna: 'durch Tahuna', ara: 'durch Ara', awa: 'durch Awa', mata: 'durch Mata', marae: 'durch Marae', 'marae-gleich': 'bei Punktgleichstand', remis: '' };
 let fxTimer = null;
 function endFxStop() { clearTimeout(fxTimer); const el = document.getElementById('endFx'); if (el) el.remove(); }
 function startEndFx(key) {
@@ -1859,16 +2121,16 @@ function renderPractice() {
   el.innerHTML = msg + `<div class="row"><button class="btn" id="prHint" ${mine ? '' : 'disabled'}>💡 Besten Zug zeigen</button><button class="btn" id="prUndo" ${(app.hist || []).length ? '' : 'disabled'}>↶ Zurücknehmen</button></div>` +
     (app.hintText ? `<div class="pr-msg soft">${app.hintText}</div>` : '');
 }
-function analyse(key) {
+async function analyse(key) {
   const st = app.st, g = st && st.g;
   if (app.kind !== 'bot' || !g || app.anaKey !== key || g.turn !== app.me) return;
   const bot = MK.other(app.me);
   let w = { kind: 'ok' };
   try {
-    if (AI.threatIn(st, app.me, 40) === 1) w = { kind: 'win' };
+    if (await Brain.call('threatIn', st, app.me, 40) === 1) w = { kind: 'win' };
     else {
-      const t = AI.threatIn(st, bot, 700);
-      if (t) { const lost = t > 1 ? AI.lostIn(st, app.me, 600) : 0; w = lost ? { kind: 'lost', n: lost } : { kind: 'threat', n: t }; }
+      const t = await Brain.call('threatIn', st, bot, 700);
+      if (t) { const lost = t > 1 ? await Brain.call('lostIn', st, app.me, 600) : 0; w = lost ? { kind: 'lost', n: lost } : { kind: 'threat', n: t }; }
     }
   } catch (e) { console.error(e); }
   if (app.anaKey === key) { app.warn = w; renderPractice(); }
@@ -1878,12 +2140,12 @@ $('#practice').addEventListener('click', e => {
   const st = app.st, g = st.g;
   if (b.id === 'prHint') {
     b.disabled = true; b.textContent = '💡 Denke nach …';
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         app.hintText = '';
-        if (g.phase === 'ball') { app.hint = AI.chooseBall(st); app.hintText = 'Tipp: Lege die Kugel in die markierte Mulde.'; }
-        else if (g.phase === 'play') { app.hint = AI.bestMove(st, app.me, 5000, { varied: false }); app.hintText = 'Tipp: Der markierte Platz ist der beste Zug.'; }
-        else if (g.phase === 'tane') { const c = AI.chooseTane(st, app.me); app.hint = null; if (c.use) { app.taneMode = true; app.taneDir = c.dir; app.hintText = 'Tipp: Setz den Tane in die vorgewählte Richtung.'; } else app.hintText = 'Tipp: Hier lieber das Plättchen legen.'; }
+        if (g.phase === 'ball') { app.hint = await Brain.call('chooseBall', st); app.hintText = 'Tipp: Lege die Kugel in die markierte Mulde.'; }
+        else if (g.phase === 'play') { app.hint = await Brain.call('bestMove', st, app.me, 5000, { varied: false }); app.hintText = 'Tipp: Der markierte Platz ist der beste Zug.'; }
+        else if (g.phase === 'tane') { const c = await Brain.call('chooseTane', st, app.me); app.hint = null; if (c.use) { app.taneMode = true; app.taneDir = c.dir; app.hintText = 'Tipp: Setz den Tane in die vorgewählte Richtung.'; } else app.hintText = 'Tipp: Hier lieber das Plättchen legen.'; }
       } catch (err) { console.error(err); }
       render();
     }, 40);
@@ -1917,15 +2179,20 @@ $('#board').addEventListener('click', e => {
   }
 });
 function onPuzzleAction(b) {
-  const st = app.st, g = st.g;
-  if (b.id === 'pzReset') { startPuzzle(app.pz.i); return true; }
-  if (b.id === 'pzBack') { show('puzzles'); renderPuzzles(); return true; }
+  if (b.id === 'pzReset') { startPuzzle(app.pz.i, !!app.sprint); return true; }
+  if (b.id === 'pzBack') { app.sprint = null; show('puzzles'); return true; }
   if (b.id === 'pzGo') { startPuzzle(+b.dataset.pz); return true; }
+  if (b.id === 'pzFit') { startPuzzle(pickSuitable()); return true; }
+  if (b.id === 'pzSprint') { startSprint(); return true; }
+  if (b.id === 'pzSkip') { app.pz.failed = true; pzFinish(false); render(); return true; }
+  if (b.id === 'pzStop') { sprintEnd(); return true; }
   if (b.id === 'pzHint' || b.id === 'pzSolve') {
     if (b.id === 'pzSolve') { app.st = puzzleState(app.pz.i); app.pz.made = 0; app.pz.failed = false; app.phaseKey = ''; }
-    const info = AI.puzzleInfo(app.st, app.me, app.pz.n - app.pz.made);
-    app.hint = info ? info.first : null; render();
-    toast(info ? (b.id === 'pzSolve' ? 'Lösung: Beginne mit der markierten Mulde – danach immer weiter drohen.' : 'Tipp: Die markierte Mulde erzeugt die richtige Drohung.') : 'Kein Gewinnweg mehr – starte das Rätsel neu.');
+    app.pz.helped = true;
+    Brain.call('puzzleInfo', app.st, app.me, app.pz.n - app.pz.made).then(info => {
+      app.hint = info ? info.first : null; render();
+      toast(info ? (b.id === 'pzSolve' ? 'Lösung: Beginne mit der markierten Mulde – danach immer weiter drohen.' : 'Tipp: Die markierte Mulde erzeugt die richtige Drohung.') : 'Kein Gewinnweg mehr – starte das Rätsel neu.');
+    });
     return true;
   }
   return false;
@@ -1939,9 +2206,9 @@ function onAction(e) {
   else if (b.id === 'tTane') { app.taneMode = true; render(); }
   else if (b.id === 'tBack') { app.taneMode = false; app.taneDir = null; render(); }
   else if (b.dataset.dir !== undefined) { app.taneDir = +b.dataset.dir; render(); }
-  else if (b.id === 'tGo') attempt(() => MK.resolveTane(st, g.turn, true, app.taneDir));
+  else if (b.id === 'tGo') { const o = MK.other(g.turn), cnt = s => s.g.tiles.filter(t => t && t.o === o).length, ns0 = MK.resolveTane(st, g.turn, true, app.taneDir); if (app.kind !== 'local') Stats.taneRemoved(cnt(st) - cnt(ns0)); attempt(() => ns0); }
   else if (b.id === 'nextGame' || b.id === 'newMatch' || b.id === 'revanche') {
-    const go = s0 => { const ns = b.id === 'nextGame' ? MK.nextGame(s0) : MK.newMatchSame(s0); ns.ready = {}; return ns; };
+    const go = s0 => { const ns = b.id === 'nextGame' ? MK.nextGame(s0) : MK.newMatchSame(s0); ns.ready = {}; if (s0.clock) ns.clock = Object.assign({}, s0.clock, { B: s0.clock.limit, W: s0.clock.limit, since: null }); return ns; };
     if (app.kind === 'bot' && b.id === 'revanche') { app.me = MK.other(app.me); app.hist = []; attempt(() => go(st)); return; }
     if (app.kind !== 'online') attempt(() => go(st));
     else {
@@ -1961,6 +2228,7 @@ $('#ask').addEventListener('click', onAction);
 
 // ---------- persistence / sync ----------
 async function commit(ns) {
+  ns = clockOnCommit(app.st, ns);
   if (app.kind === 'local') { app.st = ns; lsSet('mk-local', JSON.stringify(ns)); render(); return; }
   if (app.kind === 'bot') { app.st = ns; app.hint = null; saveBot(); render(); botTurn(); return; }
   if (app.kind === 'puzzle') { app.st = ns; app.hint = null; puzzleAfterMove(); return; }
@@ -1971,17 +2239,18 @@ function botTurn() {
   if (app.kind !== 'bot' || !g || g.phase === 'over' || g.turn === app.me || app.thinking) return;
   const token = app.botToken = (app.botToken || 0) + 1, bot = g.turn;
   app.thinking = true; render();
-  setTimeout(() => {
+  setTimeout(async () => {
     if (app.kind !== 'bot' || app.botToken !== token) { app.thinking = false; return; }
     let ns = null;
     try {
-      if (g.phase === 'ball') ns = MK.placeBall(st, AI.chooseBall(st), bot);
-      else if (g.phase === 'tane') { const c = AI.chooseTane(st, bot); ns = MK.resolveTane(st, bot, c.use, c.dir); }
+      if (g.phase === 'ball') ns = MK.placeBall(st, await Brain.call('chooseBall', st), bot);
+      else if (g.phase === 'tane') { const c = await Brain.call('chooseTane', st, bot); ns = MK.resolveTane(st, bot, c.use, c.dir); }
       else if (g.phase === 'play') {
         const L = { lehrling: [300, { margin: 60, blunder: .35, noVerify: true }], krieger: [900, { margin: 22, blunder: .08, noVerify: true }], haeuptling: [2500, { margin: 6 }] }[app.level] || [5000, {}];
-        ns = MK.placeStone(st, AI.bestMove(st, bot, L[0], L[1]), bot);
+        ns = MK.placeStone(st, await Brain.call('bestMove', st, bot, L[0], L[1]), bot);
       }
     } catch (e) { console.error(e); }
+    if (app.kind !== 'bot' || app.botToken !== token || app.st !== st) { app.thinking = false; return; }
     app.thinking = false;
     app.hintText = '';
     app.inputFloor = performance.now(); app.sel = null;
@@ -2360,7 +2629,7 @@ $('#createBtn').addEventListener('click', async () => {
   $('#createErr').textContent = ''; if (!needMqtt('#createErr')) return;
   const id = await myId();
   const first = cfg.first === 'me' ? cfg.color : MK.other(cfg.color);
-  const st = MK.newMatch({ mode: cfg.mode, target: +cfg.target, mata: cfg.mata === 'on', first });
+  const st = MK.newMatch({ mode: cfg.mode, target: +cfg.target, mata: cfg.mata === 'on', first }); st.clock = makeClock(cfg.clock);
   const code = genCode(), players = { B: null, W: null }; players[cfg.color] = id;
   closeOnline(); app.kind = 'online'; app.phaseKey = ''; app.me = cfg.color;
   net.doc = { code, created: Date.now(), players, state: st, rev: 1 }; app.st = st; app.rev = 1;
@@ -2472,7 +2741,7 @@ $('#resumeLocal').addEventListener('click', () => {
 $('#botStart').addEventListener('click', () => {
   closeOnline(); app.kind = 'bot'; app.phaseKey = ''; app.me = bcfg.color; app.thinking = false;
   const first = bcfg.first === 'me' ? bcfg.color : MK.other(bcfg.color);
-  app.st = MK.newMatch({ mode: bcfg.mode, target: +bcfg.target, mata: bcfg.mata === 'on', first });
+  app.st = MK.newMatch({ mode: bcfg.mode, target: +bcfg.target, mata: bcfg.mata === 'on', first }); app.st.clock = makeClock(bcfg.clock);
   app.practice = bcfg.practice === 'on'; app.level = bcfg.level || 'meister'; app.hist = []; app.hint = null; app.warn = null; app.anaKey = '';
   saveBot(); show('game'); render(); botTurn();
 });
@@ -2485,7 +2754,7 @@ $('#resumeBot').addEventListener('click', () => {
 });
 $('#localStart').addEventListener('click', () => {
   closeOnline(); app.kind = 'local'; app.phaseKey = '';
-  app.st = MK.newMatch({ mode: lcfg.mode, target: +lcfg.target, mata: lcfg.mata === 'on', first: lcfg.first });
+  app.st = MK.newMatch({ mode: lcfg.mode, target: +lcfg.target, mata: lcfg.mata === 'on', first: lcfg.first }); app.st.clock = makeClock(lcfg.clock);
   lsSet('mk-local', JSON.stringify(app.st)); show('game'); render();
 });
 let manualFrom = 'home', zoom = 1;
@@ -2499,6 +2768,27 @@ $('#leaveBtn').addEventListener('click', () => { closeOnline(); app.botToken = (
 $('#waitBack').addEventListener('click', () => { closeOnline(); show('home'); });
 
 // ---------- init ----------
+$('#statsBody').addEventListener('click', e => { if (e.target.id === 'stReset' && confirm('Statistik und Erfolge wirklich zurücksetzen?')) { Stats.reset(); renderStats(); } });
+$('#bkSave').addEventListener('click', async () => {
+  const d = backupData(), name = 'Moeraki-Kemu_Sicherung_' + new Date().toISOString().slice(0, 10) + '.json';
+  const file = new File([JSON.stringify(d)], name, { type: 'application/json' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Moeraki-Kemu Sicherung' }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  toast('Sicherung gespeichert: ' + name);
+});
+$('#bkLoad').addEventListener('click', () => $('#bkFile').click());
+$('#bkFile').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!d || d.app !== 'moeraki-kemu' || !d.data) throw new Error('keine Sicherung');
+    if (!confirm('Sicherung vom ' + new Date(d.t).toLocaleString('de-DE') + ' laden? Vorhandene Daten auf diesem Handy werden ersetzt.\n\nWichtig: Spiele laufende Online-Partien danach nur noch auf einem der beiden Handys.')) return;
+    Object.keys(localStorage).filter(k => k.startsWith('mk-')).forEach(k => localStorage.removeItem(k));
+    Object.entries(d.data).forEach(([k, v]) => { if (k.startsWith('mk-')) localStorage.setItem(k, v); });
+    toast('Sicherung geladen – die App startet neu.'); setTimeout(() => location.reload(), 900);
+  } catch (err) { toast('Diese Datei ist keine gültige Moeraki-Kemu-Sicherung.'); }
+  e.target.value = '';
+});
 function checkInvite() { const m = (location.hash || '').match(/spiel=([A-Z0-9]{8})/i); if (m) { history.replaceState(null, '', location.pathname); setTimeout(() => { show('online'); join(m[1].toUpperCase(), true); }, 300); } }
 checkInvite(); window.addEventListener('hashchange', checkInvite);
 (() => { const wrap = $('#boardWrap'), host = document.createElement('div'); host.className = 'board-host'; wrap.parentNode.insertBefore(host, wrap); host.appendChild(wrap); host.appendChild($('#ask'));
