@@ -27,7 +27,7 @@ Diese App ist eine private, nicht offizielle Umsetzung für den eigenen Spielkre
 - **Online gegen einen Freund** – jeder auf seinem eigenen Handy, auch zeitversetzt
 - **Zu zweit auf einem Gerät** – das Handy wird weitergereicht
 - **Gegen den Computer** – in vier Stärken: Lehrling, Krieger, Häuptling und der gnadenlose Meister, der immer wieder andere Varianten spielt
-- **Taktik-Rätsel** – 84 Stellungen, in denen sich der Sieg durch eine Kette von Drohungen erzwingen lässt (Gewinn in 2, 3 oder 4 Zügen), mit Rätsel des Tages
+- **Taktik-Rätsel** – 206 Stellungen, in denen sich der Sieg durch eine Kette von Drohungen erzwingen lässt (Gewinn in 2 bis 12 Zügen), mit Rätsel des Tages
 - **Übungsmodus** gegen den Meister – warnt vor Gefahren („Vorsicht, Spielende in 3 Zügen möglich“), zeigt auf Wunsch den besten Zug und erlaubt das Zurücknehmen von Zügen
 
 **Regeln nach der Originalanleitung (3. Auflage)**
@@ -149,6 +149,7 @@ Jeder Spieler richtet das auf seinem eigenen Handy ein.
 | `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` | App-Symbole |
 | `robots.txt` | hält Suchmaschinen fern |
 | `README.md` | diese Beschreibung |
+| `CHANGELOG.md` | Änderungsprotokoll aller Versionen |
 
 ---
 
